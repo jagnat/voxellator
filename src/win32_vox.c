@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 typedef struct
 {
@@ -40,7 +41,7 @@ int CALLBACK WinMain(
 {
 
 	LARGE_INTEGER queryRes;
-	QueryPerformanceCounter(&queryRes);
+	QueryPerformanceFrequency(&queryRes);
 	win32->timerResolution = (double)queryRes.QuadPart / 1000.L;
 
 	// TODO: move to init
@@ -132,9 +133,12 @@ int CALLBACK WinMain(
 
 		if (accumTime >= win32_platform->targetDelta)
 		{
-			printf("test2\n");
 			tick(accumTime);
 			SwapBuffers(win32->deviceContext);
+
+			// Reset event queue
+			win32_platform->filledEvents = 0;
+
 			accumTime = 0;
 		}
 
@@ -156,11 +160,20 @@ void win32_handleEvents()
 	MSG msg;
 	while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 	{
+#if 0
 		if (msg.message == WM_QUIT)
 			win32_platform->running = false;
+#endif
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+}
+
+void win32_postEvent(Event event)
+{
+	assert(win32_platform->filledEvents < EVENT_QUEUE_SIZE);
+	win32_platform->eventQueue[win32_platform->filledEvents] = event;
+	win32_platform->filledEvents++;
 }
 
 // TODO: Add to event queue
@@ -169,7 +182,9 @@ LRESULT CALLBACK win32_windowProc(
 	UINT message,
 	WPARAM wParam, LPARAM lParam)
 {
-	LRESULT result = 1;
+	Event e;
+
+	LRESULT result = 0;
 
 	switch (message)
 	{
@@ -181,6 +196,7 @@ LRESULT CALLBACK win32_windowProc(
 
 		case WM_DESTROY:
 		{
+			win32_platform->running = false;
 			PostQuitMessage(0);
 		}
 		break;
@@ -189,27 +205,36 @@ LRESULT CALLBACK win32_windowProc(
 		case WM_KEYUP:
 		{
 			if (wParam == VK_ESCAPE)
-				DestroyWindow(window);
+				PostMessage(window, WM_CLOSE, 0, 0);
 		}
 		break;
 
 		case WM_MOUSEMOVE:
 		{
-
+			e.type = EVENT_MOUSE_MOVE;
+			e.mouseMove.x = LOWORD(lParam);
+			e.mouseMove.y = HIWORD(lParam);
+			win32_postEvent(e);
 		}
 		break;
 
 		case WM_LBUTTONDOWN:
 		case WM_LBUTTONUP:
 		{
-
+			e.type = EVENT_MOUSE_CLICK;
+			e.mouseClick.mouseButton = MOUSE_BUTTON_LEFT;
+			e.mouseClick.state = wParam == MK_LBUTTON ? BUTTON_PRESSED : BUTTON_RELEASED;
+			win32_postEvent(e);
 		}
 		break;
 
 		case WM_RBUTTONDOWN:
 		case WM_RBUTTONUP:
 		{
-
+			e.type = EVENT_MOUSE_CLICK;
+			e.mouseClick.mouseButton = MOUSE_BUTTON_RIGHT;
+			e.mouseClick.state = wParam == MK_RBUTTON ? BUTTON_PRESSED : BUTTON_RELEASED;
+			win32_postEvent(e);
 		}
 		break;
 

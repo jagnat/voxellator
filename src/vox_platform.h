@@ -14,13 +14,17 @@
 
 typedef int8_t int8;
 typedef int16_t int16;
-//typedef int32_t int32;
+//typedef int32_t int;
 typedef int64_t int64;
 
 typedef uint8_t uint8;
 typedef uint16_t uint16;
-//typedef uint32_t uint32;
+typedef uint32_t uint;
 typedef uint64_t uint64;
+
+// Used to query state for keyboard/mouse events
+#define BUTTON_RELEASED 0
+#define BUTTON_PRESSED 1
 
 typedef enum
 {
@@ -34,15 +38,16 @@ typedef enum
 typedef struct
 {
 	uint keyCode;
-	bool pressed;
-	bool released;
+	uint8 state;
 } KeyEvent;
+
+#define MOUSE_BUTTON_LEFT 0
+#define MOUSE_BUTTON_RIGHT 1
 
 typedef struct
 {
-	int mouseButton;
-	bool pressed;
-	bool released;
+	uint8 mouseButton;
+	uint8 state;
 } MouseClickEvent;
 
 typedef struct
@@ -65,7 +70,7 @@ typedef struct
 
 	#define EVENT_QUEUE_SIZE 64
 	Event eventQueue[EVENT_QUEUE_SIZE];
-	int eventIndex;
+	int filledEvents;
 } PlatformState;
 
 void tick(double delta);

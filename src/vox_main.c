@@ -9,6 +9,6 @@ void init(PlatformState *platform)
 
 void tick(double delta)
 {
-	printf("test\n");
+
 }
 
