@@ -37,7 +37,7 @@ typedef enum
 
 typedef struct
 {
-	uint keyCode;
+	uint8 keyCode;
 	uint8 state;
 } KeyEvent;
 
@@ -57,10 +57,16 @@ typedef struct
 
 typedef struct
 {
+	int width, height;
+} ResizeEvent;
+
+typedef struct
+{
 	EventType type;
 	KeyEvent key;
 	MouseClickEvent mouseClick;
 	MouseMoveEvent mouseMove;
+	ResizeEvent resize;
 } Event;
 
 typedef struct
@@ -74,7 +80,7 @@ typedef struct
 } PlatformState;
 
 void tick(double delta);
-void init(PlatformState *platform);
+void init(PlatformState *plat);
 
 #endif //_VOX_PLATFORM_H_
 

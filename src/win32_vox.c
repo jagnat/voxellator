@@ -15,6 +15,10 @@ typedef struct
 	HDC deviceContext;
 	HGLRC glRenderContext;
 	double timerResolution;
+
+	LPARAM lastResizeDimensions;
+	bool unprocessedResize;
+
 } Win32Data;
 
 // TODO: Consider allocating these on the heap
@@ -107,6 +111,8 @@ int CALLBACK WinMain(
 	UpdateWindow(win32->window);
 
 	SwapBuffers(win32->deviceContext);
+
+	init(win32_platform);
 
 	double prevTime, currentTime, elapsedTime, accumTime;
 	elapsedTime = accumTime = 0;
@@ -201,11 +207,42 @@ LRESULT CALLBACK win32_windowProc(
 		}
 		break;
 
+		case WM_SIZE:
+		{
+#if 0
+			e.type = EVENT_RESIZE;
+			e.resize.width = LOWORD(lParam);
+			e.resize.height = HIWORD(lParam);
+			win32_postEvent(e);
+#endif
+			win32->lastResizeDimensions = lParam;
+			win32->unprocessedResize = true;
+		}
+		break;
+
+		case WM_EXITSIZEMOVE:
+		{
+			if (win32->unprocessedResize)
+			{
+				win32->unprocessedResize = false;
+				e.type = EVENT_RESIZE;
+				e.resize.width = LOWORD(win32->lastResizeDimensions);
+				e.resize.height = HIWORD(win32->lastResizeDimensions);
+				win32_postEvent(e);
+			}
+		}
+		break;
+
 		case WM_KEYDOWN:
 		case WM_KEYUP:
 		{
 			if (wParam == VK_ESCAPE)
 				PostMessage(window, WM_CLOSE, 0, 0);
+
+			e.type = EVENT_KEY;
+			e.key.keyCode = wParam;
+			e.key.state = message == WM_KEYDOWN ? BUTTON_PRESSED : BUTTON_RELEASED;
+			win32_postEvent(e);
 		}
 		break;
 
