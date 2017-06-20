@@ -17,8 +17,8 @@ typedef struct
 	double timerResolution;
 
 	LPARAM lastResizeDimensions;
-	bool unprocessedResize;
-
+	bool resizing;
+	bool sizeEvent;
 } Win32Data;
 
 // TODO: Consider allocating these on the heap
@@ -166,10 +166,6 @@ void win32_handleEvents()
 	MSG msg;
 	while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 	{
-#if 0
-		if (msg.message == WM_QUIT)
-			win32_platform->running = false;
-#endif
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
@@ -209,22 +205,33 @@ LRESULT CALLBACK win32_windowProc(
 
 		case WM_SIZE:
 		{
-#if 0
-			e.type = EVENT_RESIZE;
-			e.resize.width = LOWORD(lParam);
-			e.resize.height = HIWORD(lParam);
-			win32_postEvent(e);
-#endif
 			win32->lastResizeDimensions = lParam;
-			win32->unprocessedResize = true;
+			if (!win32->resizing)
+			{
+				e.type = EVENT_RESIZE;
+				e.resize.width = LOWORD(lParam);
+				e.resize.height = HIWORD(lParam);
+				win32_postEvent(e);
+			}
+			else
+			{
+				win32->sizeEvent = true;
+			}
+		}
+		break;
+
+		case WM_ENTERSIZEMOVE:
+		{
+			win32->resizing = true;
 		}
 		break;
 
 		case WM_EXITSIZEMOVE:
 		{
-			if (win32->unprocessedResize)
+			win32->resizing = false;
+			if (win32->sizeEvent)
 			{
-				win32->unprocessedResize = false;
+				win32->sizeEvent = false;
 				e.type = EVENT_RESIZE;
 				e.resize.width = LOWORD(win32->lastResizeDimensions);
 				e.resize.height = HIWORD(win32->lastResizeDimensions);
