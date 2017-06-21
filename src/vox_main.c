@@ -30,11 +30,11 @@ void tick(double delta)
 				case EVENT_KEY:
 				printf("key %s: %c\n", e.key.state ? "pressed" : "released", e.key.keyCode);
 				break;
-#endif
 
 				case EVENT_RESIZE:
 				printf("resize w:%d h:%d\n", e.resize.width, e.resize.height);
 				break;
+#endif
 			}
 		}
 	}
