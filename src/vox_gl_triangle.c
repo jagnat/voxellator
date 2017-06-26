@@ -159,7 +159,7 @@ uint loadGlShader(char *filename, ShaderType shaderType)
 	int filesize = ftell(shaderfile);
 	rewind(shaderfile);
 
-	char *filebuf = malloc(filesize * sizeof(char) + 1);
+	char *filebuf = calloc(1, filesize * sizeof(char) + 1);
 	fread(filebuf, 1, filesize, shaderfile);
 	fclose(shaderfile);
 	
