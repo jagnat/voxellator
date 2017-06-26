@@ -2,11 +2,14 @@
 
 #include <stdio.h>
 
+#include "vox_gl_triangle.h"
+
 PlatformState *platform;
 
 void init(PlatformState *plat)
 {
 	platform = plat;
+	initGlTriangle();
 }
 
 void tick(double delta)
@@ -38,5 +41,9 @@ void tick(double delta)
 			}
 		}
 	}
+
+	drawGlTriangle();
 }
+
+#include "vox_gl_triangle.c"
 
