@@ -52,6 +52,43 @@ GL_LIST
 uint createGlProgram(char *vertex, char *fragment);
 uint loadGlShader(char *filename, ShaderType shaderType);
 
+typedef union
+{
+	struct
+	{
+		uint8 r, g, b, a;
+	};
+	uint8 element[4];
+} Color;
+
+typedef struct
+{
+	int w : 2;
+	int z : 10;
+	int y : 10;
+	int x : 10;
+} Normal;
+
+typedef struct
+{
+	short x, y, z, w;
+	Color color;
+	Normal normal;
+} Vertex;
+
+typedef struct
+{
+	uint vboId;
+	uint iboId;
+	uint vaoId;
+} Buffer;
+
+float vertices[] = {
+	0, 0, 0,
+	0.75, 0, 0,
+	0, 0.75, 0
+};
+
 void initGlTriangle()
 {
 // TODO: This is also platform specific
