@@ -51,6 +51,7 @@ GL_LIST
 
 uint createGlProgram(char *vertex, char *fragment);
 uint loadGlShader(char *filename, ShaderType shaderType);
+void initBuffer();
 
 typedef union
 {
@@ -96,7 +97,6 @@ uint indices[] = {
 };
 
 uint program = 0;
-void initBuffer();
 
 void initGlTriangle()
 {
