@@ -83,11 +83,20 @@ typedef struct
 	uint vaoId;
 } Buffer;
 
+Buffer triBuffer;
+
 float vertices[] = {
 	0, 0, 0,
 	0.75, 0, 0,
 	0, 0.75, 0
 };
+
+uint indices[] = {
+	0, 1, 2
+};
+
+uint program = 0;
+void initBuffer();
 
 void initGlTriangle()
 {
@@ -103,11 +112,46 @@ GL_LIST
 GL_LIST
 #undef GLDEF
 
-	uint program = createGlProgram("vertex.glsl", "fragment.glsl");
+	program = createGlProgram("vertex.glsl", "fragment.glsl");
+
+	initBuffer();
 }
 
 void drawGlTriangle()
 {
+	glUseProgram(program);
+	glClearColor(.01f, .01f, .01f, 1.f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glBindVertexArray(triBuffer.vaoId);
+	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+}
+
+void initBuffer()
+{
+	glGenVertexArrays(1, &triBuffer.vaoId);
+	glGenBuffers(1, &triBuffer.vboId);
+	glGenBuffers(1, &triBuffer.iboId);
+	
+	glBindBuffer(GL_ARRAY_BUFFER, triBuffer.vboId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triBuffer.iboId);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
+	glBindVertexArray(triBuffer.vaoId);
+	glBindBuffer(GL_ARRAY_BUFFER, triBuffer.vboId);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triBuffer.iboId);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+	glBindVertexArray(0);
+	// IMPORTANT: unbind from the VAO before unbinding from these
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 uint createGlProgram(char *vertex, char *fragment)
