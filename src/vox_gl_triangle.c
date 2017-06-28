@@ -8,6 +8,9 @@
 #include <GL/gl.h>
 #include "thirdparty/glext.h"
 #include "thirdparty/wglext.h"
+#include "thirdparty/j_threedee.h"
+
+#include "vox_render.h"
 
 
 // TODO: Move this into a platform-specific file
@@ -51,31 +54,9 @@ GL_LIST
 
 uint createGlProgram(char *vertex, char *fragment);
 uint loadGlShader(char *filename, ShaderType shaderType);
+
 void initBuffer();
-
-typedef union
-{
-	struct
-	{
-		uint8 r, g, b, a;
-	};
-	uint8 element[4];
-} Color;
-
-typedef struct
-{
-	int w : 2;
-	int z : 10;
-	int y : 10;
-	int x : 10;
-} Normal;
-
-typedef struct
-{
-	short x, y, z, w;
-	Color color;
-	Normal normal;
-} Vertex;
+void initUniforms();
 
 typedef struct
 {
@@ -96,7 +77,9 @@ uint indices[] = {
 	0, 1, 2
 };
 
-uint program = 0;
+uint programId = 0;
+JMat4 viewMatrix, projMatrix;
+int viewLocation, projLocation;
 
 void initGlTriangle()
 {
@@ -112,20 +95,40 @@ GL_LIST
 GL_LIST
 #undef GLDEF
 
-	program = createGlProgram("vertex.glsl", "fragment.glsl");
+	programId = createGlProgram("vertex.glsl", "fragment.glsl");
+
+	initUniforms();
 
 	initBuffer();
 }
 
-void drawGlTriangle()
+void drawGlTriangle(Camera camera)
 {
-	glUseProgram(program);
+	glUseProgram(programId);
 	glClearColor(.01f, .01f, .01f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glBindVertexArray(triBuffer.vaoId);
 	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+}
+
+void initUniforms()
+{
+	viewLocation = glGetUniformLocation(programId, "viewMatrix");
+	projLocation = glGetUniformLocation(programId, "projMatrix");
+
+	if (viewLocation == -1 || projLocation == -1)
+	{
+		printf("Failed to get view/projection uniform location!\n");
+		return;
+	}
+}
+
+void setUniforms()
+{
+	glUniformMatrix4fv(projLocation, 1, false, projMatrix.flat);
+	glUniformMatrix4fv(viewLocation, 1, false, viewMatrix.flat);
 }
 
 void initBuffer()
@@ -141,7 +144,6 @@ void initBuffer()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triBuffer.iboId);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
 
 	glBindVertexArray(triBuffer.vaoId);
 	glBindBuffer(GL_ARRAY_BUFFER, triBuffer.vboId);
