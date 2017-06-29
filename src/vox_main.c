@@ -21,28 +21,26 @@ void tick(double delta)
 			Event e = platform->eventQueue[i];
 			switch (e.type)
 			{
-#if 0
 				case EVENT_MOUSE_CLICK:
-				printf("mouse click: %d, %d\n", e.mouseClick.mouseButton, e.mouseClick.state);
+
 				break;
 
 				case EVENT_MOUSE_MOVE:
-				printf("move: %d,%d\n", e.mouseMove.x, e.mouseMove.y);
+
 				break;
 
 				case EVENT_KEY:
-				printf("key %s: %c\n", e.key.state ? "pressed" : "released", e.key.keyCode);
+
 				break;
 
 				case EVENT_RESIZE:
-				printf("resize w:%d h:%d\n", e.resize.width, e.resize.height);
+				
 				break;
-#endif
 			}
 		}
 	}
 
-	drawGlTriangle();
+	drawGlTriangle(0, 0, 0, 0);
 }
 
 #include "vox_gl_triangle.c"
