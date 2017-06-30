@@ -35,6 +35,7 @@ typedef enum
 	EVENTTYPE_LENGTH
 } EventType;
 
+// TODO: Define keycodes for better agnosticity
 typedef struct
 {
 	uint8 keyCode;
@@ -46,13 +47,16 @@ typedef struct
 
 typedef struct
 {
-	uint8 mouseButton;
-	uint8 state;
+	uint mouseButton;
+	uint state;
 } MouseClickEvent;
 
 typedef struct
 {
 	int x, y;
+	int dx, dy;
+
+	bool locked;
 } MouseMoveEvent;
 
 typedef struct
@@ -69,6 +73,13 @@ typedef struct
 	ResizeEvent resize;
 } Event;
 
+// NOTE: The platform must serialize/deserialize this at init/exit
+typedef struct
+{
+	int renderMode;
+	float mouseSensitivity;
+} Config;
+
 typedef struct
 {
 	bool running;
@@ -77,10 +88,18 @@ typedef struct
 	#define EVENT_QUEUE_SIZE 64
 	Event eventQueue[EVENT_QUEUE_SIZE];
 	int filledEvents;
+
+	#define MOUSE_LOCKED 0x01
+	int flags;
 } PlatformState;
 
+// Functions the platform calls
 void tick(double delta);
 void init(PlatformState *plat);
+
+// Functions the platform must implement
+void setMouseState(bool locked);
+bool getPlatformFlag(int flag);
 
 #endif //_VOX_PLATFORM_H_
 

@@ -102,7 +102,7 @@ GL_LIST
 	initBuffer();
 }
 
-void drawGlTriangle(int mx, int my, int vx, int vy)
+void drawGlTriangle(Movement movement)
 {
 	glUseProgram(programId);
 	glClearColor(.01f, .01f, .01f, 1.f);
@@ -111,14 +111,6 @@ void drawGlTriangle(int mx, int my, int vx, int vy)
 	glBindVertexArray(triBuffer.vaoId);
 	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
-}
-
-Camera constructCamera(int mx, int my, int vx, int vy)
-{
-	const float sensitivity = 0.01f;
-	Camera cam = {0};
-
-	return cam;
 }
 
 void initUniforms()

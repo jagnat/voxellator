@@ -36,11 +36,5 @@ typedef struct
 	Normal30 normal;
 } VertexColorNormal10;
 
-typedef struct
-{
-	float yaw, pitch;
-	JVec3 pos;
-} Camera;
-
 #endif // _VOX_RENDER_H_
 

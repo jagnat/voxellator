@@ -19,6 +19,10 @@ typedef struct
 	LPARAM lastResizeDimensions;
 	bool resizing;
 	bool sizeEvent;
+
+	bool mouseLocked;
+
+	int clientW, clientH;
 } Win32Data;
 
 // TODO: Consider allocating these on the heap
@@ -36,6 +40,8 @@ LRESULT CALLBACK win32_windowProc(
 int CreateGLContext();
 double win32_elapsedMs();
 void win32_handleEvents();
+void win32_centerCursor();
+void win32_setPlatformFlag(int flag, bool state);
 
 int CALLBACK WinMain(
 	HINSTANCE instance,
@@ -73,6 +79,8 @@ int CALLBACK WinMain(
 		WS_OVERLAPPEDWINDOW, // window style
 		false, // window has no menu
 		0); // no extended window style
+	win32->clientW = tempClientRect.right - tempClientRect.left;
+	win32->clientH = tempClientRect.bottom - tempClientRect.top;
 
 	win32->window = CreateWindowEx(
 		0, // extended style
@@ -123,6 +131,9 @@ int CALLBACK WinMain(
 	{
 		win32_handleEvents();
 
+		if (getPlatformFlag(MOUSE_LOCKED))
+			win32_centerCursor();
+
 		currentTime = win32_elapsedMs();
 
 		elapsedTime = currentTime - prevTime;
@@ -161,6 +172,58 @@ int main(int argc, char **argv)
 	return WinMain(GetModuleHandle(0), 0, GetCommandLine(), SW_SHOW);
 }
 
+void win32_setPlatformFlag(int flag, bool state)
+{
+	if (state)
+		win32_platform->flags |= flag;
+	else
+		win32_platform->flags &= ~flag;
+}
+
+bool getPlatformFlag(int flag)
+{
+	return !!(win32_platform->flags & flag);
+}
+
+POINT win32_getCenterScreen()
+{
+	RECT rect;
+	GetClientRect(win32->window, &rect);
+	POINT client = {(rect.right - rect.left) / 2, (rect.bottom - rect.top) / 2};
+	ClientToScreen(win32->window, &client);
+	return client;
+}
+
+void win32_centerCursor()
+{
+	RECT clientRect;
+	GetClientRect(win32->window, &clientRect);
+	
+	POINT existing, client = win32_getCenterScreen();
+	GetCursorPos(&existing);
+
+	// Skip adding a redundant message if possible
+	if (client.x == existing.x && client.y == existing.y)
+		return;
+	SetCursorPos(client.x, client.y);
+}
+
+void setMouseState(bool locked)
+{
+	if (locked == getPlatformFlag(MOUSE_LOCKED))
+		return;
+	
+	if (locked)
+	{
+		win32_setPlatformFlag(MOUSE_LOCKED, true);
+		win32_centerCursor();
+	}
+	else
+	{
+		win32_setPlatformFlag(MOUSE_LOCKED, false);
+	}
+}
+
 void win32_handleEvents()
 {
 	MSG msg;
@@ -184,7 +247,7 @@ LRESULT CALLBACK win32_windowProc(
 	UINT message,
 	WPARAM wParam, LPARAM lParam)
 {
-	Event e;
+	Event e = {0};
 
 	LRESULT result = 0;
 
@@ -258,6 +321,19 @@ LRESULT CALLBACK win32_windowProc(
 			e.type = EVENT_MOUSE_MOVE;
 			e.mouseMove.x = LOWORD(lParam);
 			e.mouseMove.y = HIWORD(lParam);
+
+			if (getPlatformFlag(MOUSE_LOCKED))
+			{
+				POINT center = win32_getCenterScreen();
+				POINT now;
+				GetCursorPos(&now);
+				if (now.x == center.x && now.y == center.y)
+					break;
+				e.mouseMove.locked = true;
+				e.mouseMove.dx = now.x - center.x; //win32->mouseDeltaX;
+				e.mouseMove.dy = now.y - center.y; //win32->mouseDeltaY;
+			}
+
 			win32_postEvent(e);
 		}
 		break;

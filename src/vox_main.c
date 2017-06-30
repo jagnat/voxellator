@@ -1,3 +1,5 @@
+#include "vox_main.h"
+
 #include "vox_platform.h"
 
 #include <stdio.h>
@@ -26,11 +28,26 @@ void tick(double delta)
 				break;
 
 				case EVENT_MOUSE_MOVE:
+				// Use deltas
+				if (e.mouseMove.locked)
+				{
 
+				}
+				// Use absolute position
+				else
+				{
+
+				}
 				break;
 
 				case EVENT_KEY:
-
+				switch(e.key.keyCode)
+				{
+					case 'L':
+					if (e.key.state == BUTTON_PRESSED)
+						setMouseState(!(platform->flags & MOUSE_LOCKED));
+					break;
+				}
 				break;
 
 				case EVENT_RESIZE:
@@ -40,7 +57,8 @@ void tick(double delta)
 		}
 	}
 
-	drawGlTriangle(0, 0, 0, 0);
+	Movement movement = {0};
+	drawGlTriangle(movement);
 }
 
 #include "vox_gl_triangle.c"
