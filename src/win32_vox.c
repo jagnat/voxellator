@@ -1,6 +1,8 @@
 #include "vox_platform.h"
 
 #include <windows.h>
+#undef near
+#undef far
 #include <GL/gl.h>
 #include "thirdparty/wglext.h"
 

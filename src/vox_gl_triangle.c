@@ -100,6 +100,9 @@ GL_LIST
 	initUniforms();
 
 	initBuffer();
+
+	viewMatrix = JMat4_Identity();
+	projMatrix = JMat4_Identity();
 }
 
 void drawGlTriangle(Movement movement)

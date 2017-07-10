@@ -6,6 +6,10 @@
 
 #include "vox_gl_triangle.h"
 
+#define J_THREEDEE_IMPLEMENTATION
+#include "thirdparty/j_threedee.h"
+#undef J_THREEDEE_IMPLEMENTATION
+
 PlatformState *platform;
 
 void init(PlatformState *plat)

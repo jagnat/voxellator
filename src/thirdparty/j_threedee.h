@@ -158,7 +158,7 @@ JMat4 JMat4_Mult(JMat4 a, JMat4 b)
 	r.m33 = JVec4_Dot(row3, b.col3);
 	return r;
 }
-JMat4 Mat4_Ortho(float l, float r, float b, float t, float n, float f)
+JMat4 JMat4_Ortho(float l, float r, float b, float t, float n, float f)
 {
 	JMat4 m = {0};
 	m.m00 = 2 / (r - l);
@@ -177,8 +177,8 @@ JMat4 JMat4_PerspectiveFOV(float fov, float aspect, float near, float far)
 	JMat4 m = {0};
 	m.m00 = 1 / (aspect * tanfovover2);
 	m.m11 = 1 / tanfovover2;
-	m.m22 = -(far + near)/(far - near);
-	m.m23 = -(2 * far * near)/(far - near);
+	m.m22 = -1 * (far + near)/(far - near);
+	m.m23 = -1 * (2 * far * near)/(far - near);
 	m.m32 = -1;
 	return m;
 }
