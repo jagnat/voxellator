@@ -20,6 +20,8 @@ void init(PlatformState *plat)
 
 void tick(double delta)
 {
+	Movement movement = {0};
+
 	if (platform->filledEvents != 0)
 	{
 		for (int i = 0; i < platform->filledEvents; i++)
@@ -35,22 +37,40 @@ void tick(double delta)
 				// Use deltas
 				if (e.mouseMove.locked)
 				{
-
+					// Accum deltas
+					movement.screenDeltaX += e.mouseMove.dx / (float)platform->viewportWidth;
+					movement.screenDeltaY += e.mouseMove.dy / (float)platform->viewportHeight;
 				}
 				// Use absolute position
 				else
 				{
-
 				}
 				break;
 
 				case EVENT_KEY:
-				switch(e.key.keyCode)
 				{
-					case 'L':
 					if (e.key.state == BUTTON_PRESSED)
-						setMouseState(!(platform->flags & MOUSE_LOCKED));
-					break;
+					{
+						switch(e.key.keyCode)
+						{
+							case 'L':
+								setMouseState(!(platform->flags & MOUSE_LOCKED));
+							break;
+							case 'W':
+							break;
+							case 'A':
+							break;
+							case 'S':
+							break;
+							case 'D':
+							break;
+							//TODO: Add ascend/descend
+						}
+					}
+					else // BUTTON_RELEASED
+					{
+
+					}
 				}
 				break;
 
@@ -61,7 +81,6 @@ void tick(double delta)
 		}
 	}
 
-	Movement movement = {0};
 	drawGlTriangle(movement);
 }
 

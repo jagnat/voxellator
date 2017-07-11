@@ -91,6 +91,8 @@ typedef struct
 
 	#define MOUSE_LOCKED 0x01
 	int flags;
+
+	int viewportWidth, viewportHeight;
 } PlatformState;
 
 // Functions the platform calls

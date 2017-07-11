@@ -7,6 +7,7 @@ typedef struct
 {
 	float topSpeed, accelFactor;
 
+	float screenDeltaX, screenDeltaY;
 	float pitchDelta, yawDelta;
 	float pitch, yaw;
 

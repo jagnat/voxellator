@@ -277,6 +277,8 @@ LRESULT CALLBACK win32_windowProc(
 				e.resize.width = LOWORD(lParam);
 				e.resize.height = HIWORD(lParam);
 				win32_postEvent(e);
+				win32_platform->viewportWidth = LOWORD(lParam);
+				win32_platform->viewportHeight = HIWORD(lParam);
 			}
 			else
 			{
