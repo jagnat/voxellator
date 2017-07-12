@@ -7,7 +7,6 @@ typedef struct
 {
 	float topSpeed, accelFactor;
 
-	float screenDeltaX, screenDeltaY;
 	float pitchDelta, yawDelta;
 	float pitch, yaw;
 
@@ -16,6 +15,12 @@ typedef struct
 	union { JVec3 velocity; JVec3 vel; };
 	union { JVec3 position; JVec3 pos; };
 } Movement;
+
+typedef struct
+{
+	bool forward, backward, left, right, up, down;
+	float screenDeltaX, screenDeltaY;
+} Controls;
 
 #endif // _VOX_MAIN_C_
 

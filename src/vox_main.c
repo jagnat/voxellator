@@ -20,7 +20,7 @@ void init(PlatformState *plat)
 
 void tick(double delta)
 {
-	Movement movement = {0};
+	Controls controls = {0};
 
 	if (platform->filledEvents != 0)
 	{
@@ -38,8 +38,13 @@ void tick(double delta)
 				if (e.mouseMove.locked)
 				{
 					// Accum deltas
-					movement.screenDeltaX += e.mouseMove.dx / (float)platform->viewportWidth;
-					movement.screenDeltaY += e.mouseMove.dy / (float)platform->viewportHeight;
+					controls.screenDeltaX += e.mouseMove.dx / (float)platform->viewportWidth;
+					controls.screenDeltaY += e.mouseMove.dy / (float)platform->viewportHeight;
+					if (e.mouseMove.dx != 0 || e.mouseMove.dy != 0)
+					{
+						printf("dx: %d vw: %d\n", e.mouseMove.dx, platform->viewportWidth);
+						printf("dy: %d vh: %d\n", e.mouseMove.dy, platform->viewportHeight);
+					}
 				}
 				// Use absolute position
 				else
@@ -49,28 +54,26 @@ void tick(double delta)
 
 				case EVENT_KEY:
 				{
+				switch(e.key.keyCode)
+				{
+					case 'L':
 					if (e.key.state == BUTTON_PRESSED)
-					{
-						switch(e.key.keyCode)
-						{
-							case 'L':
-								setMouseState(!(platform->flags & MOUSE_LOCKED));
-							break;
-							case 'W':
-							break;
-							case 'A':
-							break;
-							case 'S':
-							break;
-							case 'D':
-							break;
-							//TODO: Add ascend/descend
-						}
-					}
-					else // BUTTON_RELEASED
-					{
-
-					}
+						setMouseState(!(platform->flags & MOUSE_LOCKED));
+					break;
+					case 'W':
+					controls.forward = e.key.state == BUTTON_PRESSED ? true : false;
+					break;
+					case 'A':
+					controls.left = e.key.state == BUTTON_PRESSED ? true : false;
+					break;
+					case 'S':
+					controls.backward = e.key.state == BUTTON_PRESSED ? true : false;
+					break;
+					case 'D':
+					controls.right = e.key.state == BUTTON_PRESSED ? true : false;
+					break;
+					//TODO: Add ascend/descend
+				}
 				}
 				break;
 
@@ -81,7 +84,7 @@ void tick(double delta)
 		}
 	}
 
-	drawGlTriangle(movement);
+	//drawGlTriangle(movement);
 }
 
 #include "vox_gl_triangle.c"
