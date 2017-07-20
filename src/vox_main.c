@@ -42,8 +42,7 @@ void tick(double delta)
 					controls.screenDeltaY += e.mouseMove.dy / (float)platform->viewportHeight;
 					if (e.mouseMove.dx != 0 || e.mouseMove.dy != 0)
 					{
-						printf("dx: %d vw: %d\n", e.mouseMove.dx, platform->viewportWidth);
-						printf("dy: %d vh: %d\n", e.mouseMove.dy, platform->viewportHeight);
+						printf("sdx: %f sdy: %f\n", controls.screenDeltaX, controls.screenDeltaY);
 					}
 				}
 				// Use absolute position

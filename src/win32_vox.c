@@ -276,9 +276,9 @@ LRESULT CALLBACK win32_windowProc(
 				e.type = EVENT_RESIZE;
 				e.resize.width = LOWORD(lParam);
 				e.resize.height = HIWORD(lParam);
-				win32_postEvent(e);
 				win32_platform->viewportWidth = LOWORD(lParam);
 				win32_platform->viewportHeight = HIWORD(lParam);
+				win32_postEvent(e);
 			}
 			else
 			{
@@ -302,6 +302,8 @@ LRESULT CALLBACK win32_windowProc(
 				e.type = EVENT_RESIZE;
 				e.resize.width = LOWORD(win32->lastResizeDimensions);
 				e.resize.height = HIWORD(win32->lastResizeDimensions);
+				win32_platform->viewportWidth = LOWORD(win32->lastResizeDimensions);
+				win32_platform->viewportHeight = HIWORD(win32->lastResizeDimensions);
 				win32_postEvent(e);
 			}
 		}
