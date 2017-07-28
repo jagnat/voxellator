@@ -22,5 +22,11 @@ typedef struct
 	float screenDeltaX, screenDeltaY;
 } Controls;
 
+typedef struct
+{
+	Controls controls;
+	Movement movement;
+} SimState;
+
 #endif // _VOX_MAIN_C_
 

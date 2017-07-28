@@ -219,10 +219,12 @@ void setMouseState(bool locked)
 	{
 		win32_setPlatformFlag(MOUSE_LOCKED, true);
 		win32_centerCursor();
+		ShowCursor(false);
 	}
 	else
 	{
 		win32_setPlatformFlag(MOUSE_LOCKED, false);
+		ShowCursor(true);
 	}
 }
 

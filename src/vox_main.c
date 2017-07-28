@@ -3,6 +3,8 @@
 #include "vox_platform.h"
 
 #include <stdio.h>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 #include "vox_gl_triangle.h"
 
@@ -11,17 +13,60 @@
 #undef J_THREEDEE_IMPLEMENTATION
 
 PlatformState *platform;
+SimState *sim;
 
 void init(PlatformState *plat)
 {
 	platform = plat;
+	sim = (SimState*)calloc(1, sizeof(SimState));
 	initGlTriangle();
 }
 
+void handleEvents();
+
+void buildMovementFromControls();
+
 void tick(double delta)
 {
-	Controls controls = {0};
+	handleEvents();
+	buildMovementFromControls();
 
+	drawGlTriangle(sim->movement);
+}
+
+void buildMovementFromControls()
+{
+	Controls *con = &sim->controls;
+	Movement *mov = &sim->movement;
+
+	const float MV_DELTA = 0.01;
+	if (con->forward)
+		mov->pos.z -= MV_DELTA;
+	if (con->backward)
+		mov->pos.z += MV_DELTA;
+	if (con->left)
+		mov->pos.x -= MV_DELTA;
+	if (con->right)
+		mov->pos.x += MV_DELTA;
+	
+	const float MOUSE_FACTOR = 0.75;
+	float yawDelta = con->screenDeltaX * MOUSE_FACTOR;
+	float pitchDelta = con->screenDeltaY * MOUSE_FACTOR;
+	
+	mov->pitch -= pitchDelta;
+	if (mov->pitch > M_PI - 0.001)
+		mov->pitch = M_PI - 0.001;
+	if (mov->pitch < 0.001 - M_PI)
+		mov->pitch = 0.001 - M_PI;
+	
+	mov->yaw = fmod(mov->yaw - yawDelta, 2 * M_PI);
+}
+
+void handleEvents()
+{
+	Controls *controls = &sim->controls;
+	controls->screenDeltaX = 0;
+	controls->screenDeltaY = 0;
 	if (platform->filledEvents != 0)
 	{
 		for (int i = 0; i < platform->filledEvents; i++)
@@ -38,12 +83,8 @@ void tick(double delta)
 				if (e.mouseMove.locked)
 				{
 					// Accum deltas
-					controls.screenDeltaX += e.mouseMove.dx / (float)platform->viewportWidth;
-					controls.screenDeltaY += e.mouseMove.dy / (float)platform->viewportHeight;
-					if (e.mouseMove.dx != 0 || e.mouseMove.dy != 0)
-					{
-						printf("sdx: %f sdy: %f\n", controls.screenDeltaX, controls.screenDeltaY);
-					}
+					controls->screenDeltaX += e.mouseMove.dx / (float)platform->viewportWidth;
+					controls->screenDeltaY += e.mouseMove.dy / (float)platform->viewportHeight;
 				}
 				// Use absolute position
 				else
@@ -60,16 +101,16 @@ void tick(double delta)
 						setMouseState(!(platform->flags & MOUSE_LOCKED));
 					break;
 					case 'W':
-					controls.forward = e.key.state == BUTTON_PRESSED ? true : false;
+					controls->forward = e.key.state == BUTTON_PRESSED ? true : false;
 					break;
 					case 'A':
-					controls.left = e.key.state == BUTTON_PRESSED ? true : false;
+					controls->left = e.key.state == BUTTON_PRESSED ? true : false;
 					break;
 					case 'S':
-					controls.backward = e.key.state == BUTTON_PRESSED ? true : false;
+					controls->backward = e.key.state == BUTTON_PRESSED ? true : false;
 					break;
 					case 'D':
-					controls.right = e.key.state == BUTTON_PRESSED ? true : false;
+					controls->right = e.key.state == BUTTON_PRESSED ? true : false;
 					break;
 					//TODO: Add ascend/descend
 				}
@@ -77,13 +118,11 @@ void tick(double delta)
 				break;
 
 				case EVENT_RESIZE:
-				
+				// TODO: Handle GL viewport resize
 				break;
 			}
 		}
 	}
-
-	//drawGlTriangle(movement);
 }
 
 #include "vox_gl_triangle.c"

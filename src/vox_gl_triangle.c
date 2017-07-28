@@ -57,6 +57,7 @@ uint loadGlShader(char *filename, ShaderType shaderType);
 
 void initBuffer();
 void initUniforms();
+void setUniforms();
 
 typedef struct
 {
@@ -68,9 +69,9 @@ typedef struct
 Buffer triBuffer;
 
 float vertices[] = {
-	0, 0, 0,
-	0.75, 0, 0,
-	0, 0.75, 0
+	0, 0, -1,
+	0.75, 0, -1,
+	0, 0.75, -1
 };
 
 uint indices[] = {
@@ -102,11 +103,15 @@ GL_LIST
 	initBuffer();
 
 	viewMatrix = JMat4_Identity();
-	projMatrix = JMat4_Identity();
+	projMatrix = JMat4_PerspectiveFOV((70.0f * 3.14159f) / 180.0f,
+		1280/720.0f, 0.001f, 100.f);
 }
 
-void drawGlTriangle(Movement movement)
+void drawGlTriangle(Movement mov)
 {
+	viewMatrix = JMat4_FPSCam(mov.pos, mov.yaw, mov.pitch);
+	setUniforms();
+
 	glUseProgram(programId);
 	glClearColor(.01f, .01f, .01f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
