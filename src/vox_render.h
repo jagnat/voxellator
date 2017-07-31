@@ -36,5 +36,13 @@ typedef struct
 	Normal30 normal;
 } VertexColorNormal10;
 
+typedef struct
+{
+	VertexColorNormal10 *vertices;
+	int numVertices;
+} ChunkMesh;
+
+void initRender()
+
 #endif // _VOX_RENDER_H_
 

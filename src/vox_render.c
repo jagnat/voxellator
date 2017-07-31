@@ -1,4 +1,4 @@
-
+#include "vox_render.h"
 
 // TODO: Move this into a separate file
 #define GL_LIST \
@@ -93,8 +93,13 @@ void initRender()
 
 	render->programId = createGlProgram(vertexFile, fragmentFile);
 
+	free(vertexFile);
+	free(fragmentFile);
+
 	free (vertexFile, fragmentFile);
 }
+
+
 
 uint createGlProgram(char *vertex, char *fragment)
 {
@@ -113,6 +118,12 @@ uint createGlProgram(char *vertex, char *fragment)
 
 	glLinkProgram(pId);
 
+	glDetachShader(pId, vId);
+	glDetachShader(pId, fId);
+
+	glDeleteShader(vId);
+	glDeleteShader(fId);
+
 	int status = 0;
 	glGetProgramiv(pId, GL_LINK_STATUS, &status);
 
@@ -130,7 +141,6 @@ uint createGlProgram(char *vertex, char *fragment)
 	return pId;
 }
 
-// TODO: Platform-specific file handling for hotloading
 uint loadGlShader(char *filedata, ShaderType shaderType)
 {
 	uint shaderId;
@@ -158,6 +168,5 @@ uint loadGlShader(char *filedata, ShaderType shaderType)
 	}
 
 	return shaderId;
-
 }
 
