@@ -41,6 +41,7 @@ typedef struct
 	VertexColorNormal10 *vertices;
 	int numVertices;
 	// TODO: This is implicit from numVertices
+	// TODO: Add mode - quads, or tris?
 	int numIndices;
 	union
 	{

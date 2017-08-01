@@ -139,7 +139,23 @@ void initChunkMesh(ChunkMesh *mesh)
 	glEnableVertexAttribArray(2); // color
 	glEnableVertexAttribArray(3); // normal
 
-	const int stride = sizeof(VertexColorNormal10);
+	int stride = sizeof(VertexColorNormal10);
+	glVertexAttribPointer(0, 3, GL_SHORT, GL_FALSE, stride, 0);
+	glVertexAttribPointer(1, 1, GL_SHORT, GL_FALSE, stride, (void*)6);
+	glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, (void*)(6+2));
+	glVertexAttribPointer(3, 4, GL_INT_2_10_10_10_REV, GL_TRUE, stride, (void*)(6+2+4));
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+// TODO: Add local transform uniform
+void renderChunkMesh(ChunkMesh *mesh)
+{
+	glBindVertexArray(mesh->vaoId);
+	glDrawElements(GL_TRIANGLES, mesh->numIndices, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
 }
 
 uint createGlProgram(char *vertex, char *fragment)
