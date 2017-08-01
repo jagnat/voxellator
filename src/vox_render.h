@@ -40,9 +40,25 @@ typedef struct
 {
 	VertexColorNormal10 *vertices;
 	int numVertices;
+	// TODO: This is implicit from numVertices
+	int numIndices;
+	union
+	{
+		uint ids[3];
+		struct
+		{
+			uint vboId, iboId, vaoId;
+		};
+	};
 } ChunkMesh;
 
-void initRender()
+typedef enum
+{
+	SHADER_VERT,
+	SHADER_FRAG
+} ShaderType;
+
+void initRender();
 
 #endif // _VOX_RENDER_H_
 

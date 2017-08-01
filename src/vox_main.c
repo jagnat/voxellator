@@ -1,12 +1,11 @@
 #include "vox_main.h"
 
 #include "vox_platform.h"
+#include "vox_render.h"
 
 #include <stdio.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
-
-#include "vox_gl_triangle.h"
 
 #define J_THREEDEE_IMPLEMENTATION
 #include "thirdparty/j_threedee.h"
@@ -19,7 +18,7 @@ void init(PlatformState *plat)
 {
 	platform = plat;
 	sim = (SimState*)calloc(1, sizeof(SimState));
-	initGlTriangle();
+	initRender();
 }
 
 void handleEvents();
@@ -31,7 +30,7 @@ void tick(double delta)
 	handleEvents();
 	buildMovementFromControls();
 
-	drawGlTriangle(sim->movement);
+	//drawGlTriangle(sim->movement);
 }
 
 void buildMovementFromControls()
@@ -125,5 +124,5 @@ void handleEvents()
 	}
 }
 
-#include "vox_gl_triangle.c"
+#include "vox_render.c"
 

@@ -1,5 +1,10 @@
 #include "vox_render.h"
 
+#include <GL/gl.h>
+#include "thirdparty/glext.h"
+#include "thirdparty/wglext.h"
+#include "thirdparty/j_threedee.h"
+
 // TODO: Move this into a separate file
 #define GL_LIST \
 /* Begin gl funcs*/ \
@@ -26,6 +31,7 @@ GLDEF(void, CompileShader, GLuint shader) \
 GLDEF(void, GetShaderiv, GLuint shader, GLenum pname, GLint *params) \
 GLDEF(void, GetShaderInfoLog, GLuint shader, GLsizei maxLength, GLsizei *length, GLchar *infoLog) \
 GLDEF(void, DeleteShader, GLuint shader) \
+GLDEF(void, DetachShader, GLuint program, GLuint shader) \
 /* End gl funcs */
 
 #ifdef _WIN32
@@ -42,9 +48,10 @@ GL_LIST
 typedef struct
 {
 	uint programId;
+	uint *quadIndices;
 } RenderState;
 
-Renderstate ___rs = {0};
+RenderState ___rs = {0};
 RenderState *render;
 
 uint createGlProgram(char *vertex, char *fragment);
@@ -70,11 +77,9 @@ void initRender()
 	FILE *shaderfile = fopen("vertex.glsl", "r");
 	if (!shaderfile)
 		printf("Couldn't load vertex file!\n");
-	
 	fseek(shaderfile, 0, SEEK_END);
 	int filesize = ftell(shaderfile);
 	rewind(shaderfile);
-
 	char *vertexFile = calloc(1, filesize * sizeof(char) + 1);
 	fread(vertexFile, 1, filesize, shaderfile);
 	fclose(shaderfile);
@@ -82,24 +87,60 @@ void initRender()
 	shaderfile = fopen("fragment.glsl", "r");
 	if (!shaderfile)
 		printf("Couldn't load fragment file!\n");
-	
 	fseek(shaderfile, 0, SEEK_END);
 	filesize = ftell(shaderfile);
 	rewind(shaderfile);
-
 	char *fragmentFile = calloc(1, filesize * sizeof(char) + 1);
 	fread(fragmentFile, 1, filesize, shaderfile);
 	fclose(shaderfile);
 
 	render->programId = createGlProgram(vertexFile, fragmentFile);
-
 	free(vertexFile);
 	free(fragmentFile);
 
-	free (vertexFile, fragmentFile);
+	int NUM_IND = 12582912;
+	render->quadIndices = malloc(sizeof(uint) * NUM_IND);
+	for (int i = 0; i < NUM_IND / 6; i++)
+	{
+		render->quadIndices[i * 6 + 0] = i * 4 + 0;
+		render->quadIndices[i * 6 + 1] = i * 4 + 2;
+		render->quadIndices[i * 6 + 2] = i * 4 + 1;
+		render->quadIndices[i * 6 + 3] = i * 4 + 0;
+		render->quadIndices[i * 6 + 4] = i * 4 + 3;
+		render->quadIndices[i * 6 + 5] = i * 4 + 2;
+	}
 }
 
+void initChunkMesh(ChunkMesh *mesh)
+{
+	glGenVertexArrays(1, &mesh->vaoId);
+	glGenBuffers(2, mesh->ids);
 
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->vboId);
+	glBufferData(GL_ARRAY_BUFFER,
+		mesh->numVertices * sizeof(VertexColorNormal10),
+		mesh->vertices,
+		GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->iboId);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+		mesh->numIndices * sizeof(uint),
+		render->quadIndices,
+		GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	glBindVertexArray(mesh->vaoId);
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->vboId);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->iboId);
+
+	glEnableVertexAttribArray(0); // position
+	glEnableVertexAttribArray(1); // w
+	glEnableVertexAttribArray(2); // color
+	glEnableVertexAttribArray(3); // normal
+
+	const int stride = sizeof(VertexColorNormal10);
+}
 
 uint createGlProgram(char *vertex, char *fragment)
 {
@@ -164,7 +205,7 @@ uint loadGlShader(char *filedata, ShaderType shaderType)
 		char *buf = calloc(1, status * sizeof(char));
 
 		glGetShaderInfoLog(shaderId, status, 0, buf);
-		printf("GL shader error in %s!!! \n\n%s\n", filename, buf);
+		printf("GL shader error!!! \n\n%s\n", buf);
 	}
 
 	return shaderId;
