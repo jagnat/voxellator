@@ -5,6 +5,8 @@
 #include "thirdparty/wglext.h"
 #include "thirdparty/j_threedee.h"
 
+//#include <stdlib.h>
+
 // TODO: Move this into a separate file
 #define GL_LIST \
 /* Begin gl funcs*/ \
@@ -49,6 +51,9 @@ typedef struct
 {
 	uint programId;
 	uint *quadIndices;
+	JMat4 projMatrix;
+	JMat4 viewMatrix;
+	int viewLoc, projLoc;
 } RenderState;
 
 RenderState ___rs = {0};
@@ -97,6 +102,17 @@ void initRender()
 	render->programId = createGlProgram(vertexFile, fragmentFile);
 	free(vertexFile);
 	free(fragmentFile);
+	glUseProgram(render->programId);
+
+	render->viewLoc = glGetUniformLocation(render->programId, "viewMatrix");
+	render->projLoc = glGetUniformLocation(render->programId, "projMatrix");
+
+	if (render->viewLoc == -1 || render->projLoc == -1)
+		printf("failed to grabu niform locations!\n");
+	
+	render->viewMatrix = JMat4_Identity();
+	render->projMatrix = JMat4_PerspectiveFOV((70.0f * 3.14159f) / 180.0f,
+		1280/720.0f, 0.001f, 100.f);
 
 	int NUM_IND = 12582912;
 	render->quadIndices = malloc(sizeof(uint) * NUM_IND);
@@ -109,6 +125,97 @@ void initRender()
 		render->quadIndices[i * 6 + 4] = i * 4 + 3;
 		render->quadIndices[i * 6 + 5] = i * 4 + 2;
 	}
+}
+
+void setPos(VertexColorNormal10 *v, int *count, short x, short y, short z)
+{
+	v[*count].x = x;
+	v[*count].y = y;
+	v[*count].z = z;
+	*count = *count + 1;
+}
+
+uint8 cubeTable[] =
+{
+0, 0, 0, // -x
+0, 1, 0,
+0, 1, 1,
+0, 0, 1,
+
+1, 0, 1, // +x
+1, 1, 1,
+1, 1, 0,
+1, 0, 0,
+
+0, 0, 0, // -y
+0, 0, 1,
+1, 0, 1,
+1, 0, 0,
+
+0, 1, 0, // +y
+1, 1, 0,
+1, 1, 1,
+0, 1, 1,
+
+1, 0, 0, // -z
+1, 1, 0,
+0, 1, 0,
+0, 0, 0,
+
+0, 0, 1, // + z
+0, 1, 1,
+1, 1, 1,
+1, 0, 1
+};
+
+void addCube(ChunkMesh *mesh, int *count, int x, int y, int z, uint8 g, uint8 b)
+{
+	VertexColorNormal10 *v = mesh->vertices;
+	for (int i = 0; i < 24; i++)
+	{
+		v[*count + i].color.g=g;
+		v[*count + i].color.b=b;
+		v[*count + i].color.a=255;
+	}
+
+	int offs = 0;
+	for (int i = 0; i < 24; i++)
+	{
+		setPos(v, count, x + cubeTable[offs], y + cubeTable[offs + 1], z + cubeTable[offs + 2]);
+		offs += 3;
+	}
+}
+
+ChunkMesh *createSampleMesh()
+{
+	uint8* buf = calloc(1, 32 * 32 * 32 * sizeof(uint8));
+	int num = 0;
+	for (int x = 0; x < (32 * 32 * 32); x++)
+	{
+		if ((rand() % 100) > 50)
+		{
+			num++;
+			buf[x] = 255;
+		}
+	}
+
+	ChunkMesh *mesh = malloc(sizeof(ChunkMesh) + sizeof(VertexColorNormal10) * num * 24);
+	mesh->vertices = (VertexColorNormal10*)(mesh + 1);
+	mesh->numVertices = num * 24;
+	mesh->numIndices = num * 36;
+
+	int count = 0;
+	for (int x = 0; x < 32; x++)
+		for (int y = 0; y < 32; y++)
+			for (int z = 0; z < 32; z++)
+				if (buf[x + y * 32 + z * 32 * 32] == 255)
+					addCube(mesh, &count, x, y, z, rand() % 255, rand() % 255);
+	
+	initChunkMesh(mesh);
+	
+	free(buf);
+	
+	return mesh;
 }
 
 void initChunkMesh(ChunkMesh *mesh)
@@ -135,15 +242,13 @@ void initChunkMesh(ChunkMesh *mesh)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->iboId);
 
 	glEnableVertexAttribArray(0); // position
-	glEnableVertexAttribArray(1); // w
-	glEnableVertexAttribArray(2); // color
-	glEnableVertexAttribArray(3); // normal
+	glEnableVertexAttribArray(1); // color
+	glEnableVertexAttribArray(2); // normal
 
 	int stride = sizeof(VertexColorNormal10);
 	glVertexAttribPointer(0, 3, GL_SHORT, GL_FALSE, stride, 0);
-	glVertexAttribPointer(1, 1, GL_SHORT, GL_FALSE, stride, (void*)6);
-	glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, (void*)(6+2));
-	glVertexAttribPointer(3, 4, GL_INT_2_10_10_10_REV, GL_TRUE, stride, (void*)(6+2+4));
+	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, (void*)(8));
+	glVertexAttribPointer(2, 4, GL_INT_2_10_10_10_REV, GL_TRUE, stride, (void*)(8+4));
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -156,6 +261,16 @@ void renderChunkMesh(ChunkMesh *mesh)
 	glBindVertexArray(mesh->vaoId);
 	glDrawElements(GL_TRIANGLES, mesh->numIndices, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+}
+
+void setCam(Movement mov)
+{
+	glUseProgram(render->programId);
+	glClearColor(.01f, .01f, .01f, 1.f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	render->viewMatrix = JMat4_FPSCam(mov.pos, mov.yaw, mov.pitch);
+	glUniformMatrix4fv(render->projLoc, 1, false, render->projMatrix.flat);
+	glUniformMatrix4fv(render->viewLoc, 1, false, render->viewMatrix.flat);
 }
 
 uint createGlProgram(char *vertex, char *fragment)

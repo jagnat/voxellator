@@ -60,6 +60,10 @@ typedef enum
 } ShaderType;
 
 void initRender();
+void initChunkMesh(ChunkMesh *mesh);
+void renderChunkMesh(ChunkMesh *mesh);
+void setCam(Movement mov);
+ChunkMesh *createSampleMesh();
 
 #endif // _VOX_RENDER_H_
 

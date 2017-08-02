@@ -3,9 +3,9 @@
 #include "vox_platform.h"
 #include "vox_render.h"
 
-#include <stdio.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <stdio.h>
 
 #define J_THREEDEE_IMPLEMENTATION
 #include "thirdparty/j_threedee.h"
@@ -14,11 +14,14 @@
 PlatformState *platform;
 SimState *sim;
 
+ChunkMesh *myMesh;
+
 void init(PlatformState *plat)
 {
 	platform = plat;
 	sim = (SimState*)calloc(1, sizeof(SimState));
 	initRender();
+	myMesh = createSampleMesh();
 }
 
 void handleEvents();
@@ -30,7 +33,8 @@ void tick(double delta)
 	handleEvents();
 	buildMovementFromControls();
 
-	//drawGlTriangle(sim->movement);
+	setCam(sim->movement);
+	renderChunkMesh(myMesh);
 }
 
 void buildMovementFromControls()
