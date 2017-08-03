@@ -36,7 +36,7 @@ GLDEF(void, DeleteShader, GLuint shader) \
 GLDEF(void, DetachShader, GLuint program, GLuint shader) \
 /* End gl funcs */
 
-#ifdef _WIN32
+#ifdef _WINCHUNK_SIZE
 #define GLDECL APIENTRY
 #else
 #define GLDECL
@@ -77,6 +77,10 @@ void initRender()
 	#undef GLDEF
 
 	render = &___rs;
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_CULL_FACE);
+	glDepthFunc(GL_LEQUAL);
 
 	// TODO: Don't use stdio for file io, make this part of platform
 	FILE *shaderfile = fopen("vertex.glsl", "r");
@@ -112,9 +116,9 @@ void initRender()
 	
 	render->viewMatrix = JMat4_Identity();
 	render->projMatrix = JMat4_PerspectiveFOV((70.0f * 3.14159f) / 180.0f,
-		1280/720.0f, 0.001f, 100.f);
+		1280/720.0f, 0.001f, 10000.f);
 
-	int NUM_IND = 12582912;
+	int NUM_IND = 50331648;
 	render->quadIndices = malloc(sizeof(uint) * NUM_IND);
 	for (int i = 0; i < NUM_IND / 6; i++)
 	{
@@ -168,11 +172,12 @@ uint8 cubeTable[] =
 1, 0, 1
 };
 
-void addCube(ChunkMesh *mesh, int *count, int x, int y, int z, uint8 g, uint8 b)
+void addCube(ChunkMesh *mesh, int *count, int x, int y, int z, uint8 r, uint8 g, uint8 b)
 {
 	VertexColorNormal10 *v = mesh->vertices;
 	for (int i = 0; i < 24; i++)
 	{
+		v[*count + i].color.r=r;
 		v[*count + i].color.g=g;
 		v[*count + i].color.b=b;
 		v[*count + i].color.a=255;
@@ -188,11 +193,13 @@ void addCube(ChunkMesh *mesh, int *count, int x, int y, int z, uint8 g, uint8 b)
 
 ChunkMesh *createSampleMesh()
 {
-	uint8* buf = calloc(1, 32 * 32 * 32 * sizeof(uint8));
+	int CHUNK_SIZE = 256;
+	srand(0);
+	uint8* buf = calloc(1, CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * sizeof(uint8));
 	int num = 0;
-	for (int x = 0; x < (32 * 32 * 32); x++)
+	for (int x = 0; x < (CHUNK_SIZE* CHUNK_SIZE * CHUNK_SIZE); x++)
 	{
-		if ((rand() % 100) > 50)
+		if ((rand() % 100) > 98)
 		{
 			num++;
 			buf[x] = 255;
@@ -205,11 +212,35 @@ ChunkMesh *createSampleMesh()
 	mesh->numIndices = num * 36;
 
 	int count = 0;
-	for (int x = 0; x < 32; x++)
-		for (int y = 0; y < 32; y++)
-			for (int z = 0; z < 32; z++)
-				if (buf[x + y * 32 + z * 32 * 32] == 255)
-					addCube(mesh, &count, x, y, z, rand() % 255, rand() % 255);
+	for (int y = 0; y < CHUNK_SIZE; y++)
+	{
+		/*
+		for (int x = 0; x < CHUNK_SIZE / 2; x++)
+			for (int z = 0; z < CHUNK_SIZE / 2; z++)
+				if (buf[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == 255)
+					addCube(mesh, &count, x, y, z, 255, 0, 0);
+
+		for (int x =CHUNK_SIZE / 2; x < CHUNK_SIZE; x++)
+			for (int z = 0; z < CHUNK_SIZE / 2; z++)
+				if (buf[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == 255)
+					addCube(mesh, &count, x, y, z, 0, 255, 0);
+
+		for (int x = 0; x < CHUNK_SIZE/ 2; x++)
+			for (int z = CHUNK_SIZE / 2; z < CHUNK_SIZE; z++)
+				if (buf[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == 255)
+					addCube(mesh, &count, x, y, z, 0, 0, 255);
+
+		for (int x = CHUNK_SIZE / 2; x < CHUNK_SIZE; x++)
+			for (int z = CHUNK_SIZE / 2; z < CHUNK_SIZE; z++)
+				if (buf[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == 255)
+					addCube(mesh, &count, x, y, z, 0, 128 + rand() % 127, 128 + rand() % 127);
+		*/
+		for (int x = 0; x < CHUNK_SIZE; x++)
+			for (int z = 0; z < CHUNK_SIZE; z++)
+				if (buf[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == 255)
+					addCube(mesh, &count, x, y, z, rand() % 255, rand() % 255, rand() % 255);
+
+	}
 	
 	initChunkMesh(mesh);
 	

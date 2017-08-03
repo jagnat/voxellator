@@ -20,6 +20,9 @@ void init(PlatformState *plat)
 {
 	platform = plat;
 	sim = (SimState*)calloc(1, sizeof(SimState));
+	//sim->movement.pos.x = 16;
+	//sim->movement.pos.z = 16;
+	sim->movement.yaw = M_PI + M_PI / 4;
 	initRender();
 	myMesh = createSampleMesh();
 }
@@ -41,16 +44,6 @@ void buildMovementFromControls()
 {
 	Controls *con = &sim->controls;
 	Movement *mov = &sim->movement;
-
-	const float MV_DELTA = 0.01;
-	if (con->forward)
-		mov->pos.z -= MV_DELTA;
-	if (con->backward)
-		mov->pos.z += MV_DELTA;
-	if (con->left)
-		mov->pos.x -= MV_DELTA;
-	if (con->right)
-		mov->pos.x += MV_DELTA;
 	
 	const float MOUSE_FACTOR = 0.75;
 	float yawDelta = con->screenDeltaX * MOUSE_FACTOR;
@@ -63,6 +56,28 @@ void buildMovementFromControls()
 		mov->pitch = 0.001 - M_PI;
 	
 	mov->yaw = fmod(mov->yaw - yawDelta, 2 * M_PI);
+
+	const float MV_DELTA = 0.5;
+	if (con->forward)
+	{
+		mov->pos.z -= MV_DELTA * cos(mov->yaw);
+		mov->pos.x -= MV_DELTA * sin(mov->yaw);
+	}
+	if (con->backward)
+	{
+		mov->pos.z += MV_DELTA * cos(mov->yaw);
+		mov->pos.x += MV_DELTA * sin(mov->yaw);
+	}
+	if (con->left)
+	{
+		mov->pos.z -= MV_DELTA * cos(mov->yaw + M_PI / 2);
+		mov->pos.x -= MV_DELTA * sin(mov->yaw + M_PI / 2);
+	}
+	if (con->right)
+	{
+		mov->pos.z += MV_DELTA * cos(mov->yaw + M_PI / 2);
+		mov->pos.x += MV_DELTA * sin(mov->yaw + M_PI / 2);
+	}
 }
 
 void handleEvents()
