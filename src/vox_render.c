@@ -36,7 +36,7 @@ GLDEF(void, DeleteShader, GLuint shader) \
 GLDEF(void, DetachShader, GLuint program, GLuint shader) \
 /* End gl funcs */
 
-#ifdef _WINCHUNK_SIZE
+#ifdef _WIN32
 #define GLDECL APIENTRY
 #else
 #define GLDECL
