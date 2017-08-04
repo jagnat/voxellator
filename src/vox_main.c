@@ -154,4 +154,5 @@ void handleEvents()
 }
 
 #include "vox_render.c"
+#include "vox_noise.c"
 
