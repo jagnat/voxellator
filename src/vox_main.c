@@ -78,6 +78,10 @@ void buildMovementFromControls()
 		mov->pos.z += MV_DELTA * cos(mov->yaw + M_PI / 2);
 		mov->pos.x += MV_DELTA * sin(mov->yaw + M_PI / 2);
 	}
+	if (con->up)
+		mov->pos.y += MV_DELTA;
+	if (con->down)
+		mov->pos.y -= MV_DELTA;
 }
 
 void handleEvents()
@@ -119,18 +123,24 @@ void handleEvents()
 						setMouseState(!(platform->flags & MOUSE_LOCKED));
 					break;
 					case 'W':
-					controls->forward = e.key.state == BUTTON_PRESSED ? true : false;
+					controls->forward = e.key.state == BUTTON_PRESSED;
 					break;
 					case 'A':
-					controls->left = e.key.state == BUTTON_PRESSED ? true : false;
+					controls->left = e.key.state == BUTTON_PRESSED;
 					break;
 					case 'S':
-					controls->backward = e.key.state == BUTTON_PRESSED ? true : false;
+					controls->backward = e.key.state == BUTTON_PRESSED;
 					break;
 					case 'D':
-					controls->right = e.key.state == BUTTON_PRESSED ? true : false;
+					controls->right = e.key.state == BUTTON_PRESSED;
 					break;
-					//TODO: Add ascend/descend
+					// TODO: Make special keys platform-agnostic
+					case 0xa0: // Left Shift
+					controls->down = e.key.state == BUTTON_PRESSED;
+					break;
+					case ' ':
+					controls->up = e.key.state == BUTTON_PRESSED;
+					break;
 				}
 				}
 				break;

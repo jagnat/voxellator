@@ -317,8 +317,30 @@ LRESULT CALLBACK win32_windowProc(
 			if (wParam == VK_ESCAPE)
 				PostMessage(window, WM_CLOSE, 0, 0);
 
+			if (wParam == VK_SHIFT)
+			{
+				unsigned short lShift = GetKeyState(VK_LSHIFT);
+				unsigned short rShift = GetKeyState(VK_RSHIFT);
+				lShift >>= 15; rShift >>= 15;
+				if (message == WM_KEYDOWN)
+				{
+					if (lShift)
+						e.key.keyCode = VK_LSHIFT;
+					else
+						e.key.keyCode = VK_RSHIFT;
+				}
+				else
+				{
+					if (!lShift)
+						e.key.keyCode = VK_LSHIFT;
+					else
+						e.key.keyCode = VK_RSHIFT;
+				}
+			}
+			else
+				e.key.keyCode = wParam;
+
 			e.type = EVENT_KEY;
-			e.key.keyCode = wParam;
 			e.key.state = message == WM_KEYDOWN ? BUTTON_PRESSED : BUTTON_RELEASED;
 			win32_postEvent(e);
 		}
