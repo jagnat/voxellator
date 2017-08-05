@@ -5,6 +5,8 @@
 #include "thirdparty/wglext.h"
 #include "thirdparty/j_threedee.h"
 
+#include "vox_noise.h"
+
 //#include <stdlib.h>
 
 // TODO: Move this into a separate file
@@ -193,16 +195,36 @@ void addCube(ChunkMesh *mesh, int *count, int x, int y, int z, uint8 r, uint8 g,
 
 ChunkMesh *createSampleMesh()
 {
-	int CHUNK_SIZE = 256;
+	int CHUNK_SIZE = 64;
 	srand(0);
 	uint8* buf = calloc(1, CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * sizeof(uint8));
 	int num = 0;
+	/*
 	for (int x = 0; x < (CHUNK_SIZE* CHUNK_SIZE * CHUNK_SIZE); x++)
 	{
 		if ((rand() % 100) > 98)
 		{
 			num++;
 			buf[x] = 255;
+		}
+	}
+	*/
+
+
+	seedPerlin3(128943);
+	for (int x = 0; x < CHUNK_SIZE; x++)
+	{
+		for (int y = 0; y < CHUNK_SIZE; y++)
+		{
+			for (int z = 0; z < CHUNK_SIZE; z++)
+			{
+				float p = perlin3(x / 20.0, y / 20.0, z / 20.0);
+				if (p > 0.5)
+				{
+					num++;
+					buf[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] = 255;
+				}
+			}
 		}
 	}
 
