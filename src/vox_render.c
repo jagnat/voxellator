@@ -211,15 +211,15 @@ ChunkMesh *createSampleMesh()
 	*/
 
 
-	seedPerlin3(128943);
+	seedPerlin3(9848902986);
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
 		for (int y = 0; y < CHUNK_SIZE; y++)
 		{
 			for (int z = 0; z < CHUNK_SIZE; z++)
 			{
-				float p = perlin3(x / 20.0, y / 20.0, z / 20.0);
-				if (p > 0.5)
+				float p = perlin3(x / 30.0, y / 30.0, z / 20.0);
+				if (p > 0.55)
 				{
 					num++;
 					buf[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] = 255;

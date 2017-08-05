@@ -20,9 +20,11 @@ void init(PlatformState *plat)
 {
 	platform = plat;
 	sim = (SimState*)calloc(1, sizeof(SimState));
-	//sim->movement.pos.x = 16;
-	//sim->movement.pos.z = 16;
+	sim->movement.pos.x = -16;
+	sim->movement.pos.z = -16;
+	sim->movement.pos.y = 80;
 	sim->movement.yaw = M_PI + M_PI / 4;
+	sim->movement.pitch = -M_PI / 5;
 	initRender();
 	myMesh = createSampleMesh();
 }
@@ -50,10 +52,10 @@ void buildMovementFromControls()
 	float pitchDelta = con->screenDeltaY * MOUSE_FACTOR;
 	
 	mov->pitch -= pitchDelta;
-	if (mov->pitch > M_PI - 0.001)
-		mov->pitch = M_PI - 0.001;
-	if (mov->pitch < 0.001 - M_PI)
-		mov->pitch = 0.001 - M_PI;
+	if (mov->pitch > (M_PI / 2) - 0.001)
+		mov->pitch = (M_PI / 2) - 0.001;
+	if (mov->pitch < 0.001 - (M_PI / 2))
+		mov->pitch = 0.001 - (M_PI / 2);
 	
 	mov->yaw = fmod(mov->yaw - yawDelta, 2 * M_PI);
 
