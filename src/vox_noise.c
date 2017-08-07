@@ -81,6 +81,8 @@ float perlin3(float x, float y, float z)
 	x2 = plerp(pgrad3(p[ab + 1], xf, yf - 1, zf - 1), pgrad3(p[bb + 1], xf - 1, yf - 1, zf - 1), u);	
 	y2 = plerp(x1, x2, v);
 
-	return (plerp(y1, y2, w) + 1) / 2;
+	float r = plerp(y1, y2, w);
+
+	return r / 0.866025403784f;
 }
 

@@ -174,6 +174,27 @@ uint8 cubeTable[] =
 1, 0, 1
 };
 
+/*
+Normal30 normTable[] =
+{
+	{0, 0, 0, -512},
+	{0, 0, 0, 511},
+	{0, 0, -512, 0},
+	{0, 0, 511, 0},
+	{0, -512, 0, 0},
+	{0, 511, 0, 0}
+};
+*/
+uint normTable[] = {
+	0x200, // x-
+	0x1ff,
+	0x80000,
+	0x7fc00,
+	0x20000000,
+	0x1FF00000
+};
+
+
 void addCube(ChunkMesh *mesh, int *count, int x, int y, int z, uint8 r, uint8 g, uint8 b)
 {
 	VertexColorNormal10 *v = mesh->vertices;
@@ -183,6 +204,7 @@ void addCube(ChunkMesh *mesh, int *count, int x, int y, int z, uint8 r, uint8 g,
 		v[*count + i].color.g=g;
 		v[*count + i].color.b=b;
 		v[*count + i].color.a=255;
+		v[*count + i].normal = normTable[i / 4];
 	}
 
 	int offs = 0;
@@ -199,27 +221,16 @@ ChunkMesh *createSampleMesh()
 	srand(0);
 	uint8* buf = calloc(1, CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * sizeof(uint8));
 	int num = 0;
-	/*
-	for (int x = 0; x < (CHUNK_SIZE* CHUNK_SIZE * CHUNK_SIZE); x++)
-	{
-		if ((rand() % 100) > 98)
-		{
-			num++;
-			buf[x] = 255;
-		}
-	}
-	*/
 
-
-	seedPerlin3(9848902986);
+	seedPerlin3(482924);
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
 		for (int y = 0; y < CHUNK_SIZE; y++)
 		{
 			for (int z = 0; z < CHUNK_SIZE; z++)
 			{
-				float p = perlin3(x / 30.0, y / 30.0, z / 20.0);
-				if (p > 0.55)
+				float p = perlin3(x / 30.0, y / 30.0, z / 30.0);
+				if (p > 0)
 				{
 					num++;
 					buf[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] = 255;
@@ -229,42 +240,19 @@ ChunkMesh *createSampleMesh()
 	}
 
 	ChunkMesh *mesh = malloc(sizeof(ChunkMesh) + sizeof(VertexColorNormal10) * num * 24);
+	initChunkMesh(mesh);
 	mesh->vertices = (VertexColorNormal10*)(mesh + 1);
 	mesh->numVertices = num * 24;
 	mesh->numIndices = num * 36;
 
 	int count = 0;
 	for (int y = 0; y < CHUNK_SIZE; y++)
-	{
-		/*
-		for (int x = 0; x < CHUNK_SIZE / 2; x++)
-			for (int z = 0; z < CHUNK_SIZE / 2; z++)
-				if (buf[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == 255)
-					addCube(mesh, &count, x, y, z, 255, 0, 0);
-
-		for (int x =CHUNK_SIZE / 2; x < CHUNK_SIZE; x++)
-			for (int z = 0; z < CHUNK_SIZE / 2; z++)
-				if (buf[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == 255)
-					addCube(mesh, &count, x, y, z, 0, 255, 0);
-
-		for (int x = 0; x < CHUNK_SIZE/ 2; x++)
-			for (int z = CHUNK_SIZE / 2; z < CHUNK_SIZE; z++)
-				if (buf[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == 255)
-					addCube(mesh, &count, x, y, z, 0, 0, 255);
-
-		for (int x = CHUNK_SIZE / 2; x < CHUNK_SIZE; x++)
-			for (int z = CHUNK_SIZE / 2; z < CHUNK_SIZE; z++)
-				if (buf[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == 255)
-					addCube(mesh, &count, x, y, z, 0, 128 + rand() % 127, 128 + rand() % 127);
-		*/
 		for (int x = 0; x < CHUNK_SIZE; x++)
 			for (int z = 0; z < CHUNK_SIZE; z++)
 				if (buf[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] == 255)
-					addCube(mesh, &count, x, y, z, rand() % 255, rand() % 255, rand() % 255);
-
-	}
+					addCube(mesh, &count, x, y, z, 40, 128, 128);
 	
-	initChunkMesh(mesh);
+	uploadChunkMesh(mesh);
 	
 	free(buf);
 	
@@ -276,19 +264,23 @@ void initChunkMesh(ChunkMesh *mesh)
 	glGenVertexArrays(1, &mesh->vaoId);
 	glGenBuffers(2, mesh->ids);
 
+	/*
 	glBindBuffer(GL_ARRAY_BUFFER, mesh->vboId);
 	glBufferData(GL_ARRAY_BUFFER,
 		mesh->numVertices * sizeof(VertexColorNormal10),
 		mesh->vertices,
 		GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	*/
 
+	/*
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->iboId);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
 		mesh->numIndices * sizeof(uint),
 		render->quadIndices,
 		GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	*/
 
 	glBindVertexArray(mesh->vaoId);
 	glBindBuffer(GL_ARRAY_BUFFER, mesh->vboId);
@@ -305,6 +297,24 @@ void initChunkMesh(ChunkMesh *mesh)
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void uploadChunkMesh(ChunkMesh *mesh)
+{
+	// TODO: Make this more intelligent, use bufferSubData conditionally
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->vboId);
+	glBufferData(GL_ARRAY_BUFFER,
+		mesh->numVertices * sizeof(VertexColorNormal10),
+		mesh->vertices,
+		GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->iboId);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+		mesh->numIndices * sizeof(uint),
+		render->quadIndices,
+		GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
