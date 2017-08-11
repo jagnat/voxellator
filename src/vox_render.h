@@ -21,16 +21,6 @@ typedef union
 	uint8 element[4];
 } Color;
 
-/*
-typedef struct
-{
-	int z : 10;
-	int y : 10;
-	int x : 10;
-	int w : 2;
-} Normal30;
-*/
-
 typedef struct
 {
 	short x, y, z, w;
@@ -40,18 +30,21 @@ typedef struct
 
 typedef enum
 {
-	POLYMODE_QUADS,
-	POLYMODE_TRIS,
-	POLYMODE_CUSTOM
-} PolyMode;
+	INDEX_QUADS,
+	INDEX_TRIS,
+	INDEX_CUSTOM
+} IndexMode;
 
 typedef struct
 {
+	int allocatedVertices;
+	int usedVertices;
 	VertexColorNormal10 *vertices;
-	int numVertices;
-	// TODO: This is implicit from numVertices?
-	// TODO: Add mode - quads, or tris, or user?
-	int numIndices;
+
+	IndexMode mode;
+	uint *indices;
+
+	// TODO: Sub-struct this, decouple from OpenGL
 	union
 	{
 		uint ids[3];

@@ -141,6 +141,8 @@ void setPos(VertexColorNormal10 *v, int *count, short x, short y, short z)
 	*count = *count + 1;
 }
 
+
+#if 0
 uint8 cubeTable[] =
 {
 0, 0, 0, // -x
@@ -174,24 +176,14 @@ uint8 cubeTable[] =
 1, 0, 1
 };
 
-/*
-Normal30 normTable[] =
-{
-	{0, 0, 0, -512},
-	{0, 0, 0, 511},
-	{0, 0, -512, 0},
-	{0, 0, 511, 0},
-	{0, -512, 0, 0},
-	{0, 511, 0, 0}
-};
-*/
+// TODO: Inline function to create int_2_10_10_10_rev
 uint normTable[] = {
-	0x200, // x-
-	0x1ff,
-	0x80000,
-	0x7fc00,
-	0x20000000,
-	0x1FF00000
+	0x200, // -x
+	0x1ff, // +x
+	0x80000, // -y
+	0x7fc00, // +y
+	0x20000000, // -z
+	0x1FF00000  // +z
 };
 
 
@@ -259,28 +251,12 @@ ChunkMesh *createSampleMesh()
 	return mesh;
 }
 
+#endif // 0
+
 void initChunkMesh(ChunkMesh *mesh)
 {
 	glGenVertexArrays(1, &mesh->vaoId);
 	glGenBuffers(2, mesh->ids);
-
-	/*
-	glBindBuffer(GL_ARRAY_BUFFER, mesh->vboId);
-	glBufferData(GL_ARRAY_BUFFER,
-		mesh->numVertices * sizeof(VertexColorNormal10),
-		mesh->vertices,
-		GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	*/
-
-	/*
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->iboId);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		mesh->numIndices * sizeof(uint),
-		render->quadIndices,
-		GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	*/
 
 	glBindVertexArray(mesh->vaoId);
 	glBindBuffer(GL_ARRAY_BUFFER, mesh->vboId);
@@ -295,7 +271,9 @@ void initChunkMesh(ChunkMesh *mesh)
 	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, (void*)(8));
 	glVertexAttribPointer(2, 4, GL_INT_2_10_10_10_REV, GL_TRUE, stride, (void*)(8+4));
 
+	// Important that this happens first - keep buffers bound to VAO!
 	glBindVertexArray(0);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
@@ -307,22 +285,35 @@ void uploadChunkMesh(ChunkMesh *mesh)
 	glBufferData(GL_ARRAY_BUFFER,
 		mesh->numVertices * sizeof(VertexColorNormal10),
 		mesh->vertices,
-		GL_STATIC_DRAW);
+		GL_STATIC_DRAW); // TODO: Profile usage if we add mutability
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->iboId);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		mesh->numIndices * sizeof(uint),
-		render->quadIndices,
-		GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	if (mesh->mode != INDEX_TRIS)
+	{
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->iboId);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+			mesh->numIndices * sizeof(uint),
+			mesh->mode == INDEX_QUADS ? render->quadIndices : mesh->indices,
+			GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
 }
 
 // TODO: Add local transform uniform
 void renderChunkMesh(ChunkMesh *mesh)
 {
 	glBindVertexArray(mesh->vaoId);
-	glDrawElements(GL_TRIANGLES, mesh->numIndices, GL_UNSIGNED_INT, 0);
+	switch(mesh->mode)
+	{
+		case INDEX_TRIS:
+		glDrawArrays(GL_TRIANGLES, 0, mesh->numVertices);
+		break;
+
+		case INDEX_CUSTOM:
+		case INDEX_QUADS:
+		glDrawElements(GL_TRIANGLES, mesh->numIndices, GL_UNSIGNED_INT, 0);
+		break;
+	}
 	glBindVertexArray(0);
 }
 

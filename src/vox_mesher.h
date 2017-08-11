@@ -1,0 +1,11 @@
+#pragma once
+#ifndef _VOX_MESHER_H_
+#define _VOX_MESHER_H_
+
+#include "vox_render.h"
+
+void meshVanillaNaive(Chunk *chunk, ChunkMesh *mesh);
+void meshVanillaCull(Chunk *chunk, ChunkMesh *mesh);
+
+#endif // _VOX_MESHER_H_
+
