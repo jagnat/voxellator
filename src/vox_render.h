@@ -42,6 +42,7 @@ typedef struct
 	VertexColorNormal10 *vertices;
 
 	IndexMode mode;
+	int numIndices;
 	uint *indices;
 
 	// TODO: Sub-struct this, decouple from OpenGL
@@ -68,7 +69,7 @@ void uploadChunkMesh(ChunkMesh *mesh);
 void renderChunkMesh(ChunkMesh *mesh);
 
 void setCam(Movement mov);
-ChunkMesh *createSampleMesh();
+//ChunkMesh *createSampleMesh();
 
 #endif // _VOX_RENDER_H_
 

@@ -14,7 +14,7 @@
 PlatformState *platform;
 SimState *sim;
 
-ChunkMesh *myMesh;
+//ChunkMesh *myMesh;
 
 void init(PlatformState *plat)
 {
@@ -26,7 +26,7 @@ void init(PlatformState *plat)
 	sim->movement.yaw = M_PI + M_PI / 4;
 	sim->movement.pitch = -M_PI / 5;
 	initRender();
-	myMesh = createSampleMesh();
+	//myMesh = createSampleMesh();
 }
 
 void handleEvents();
@@ -39,7 +39,7 @@ void tick(double delta)
 	buildMovementFromControls();
 
 	setCam(sim->movement);
-	renderChunkMesh(myMesh);
+	//renderChunkMesh(myMesh);
 }
 
 void buildMovementFromControls()

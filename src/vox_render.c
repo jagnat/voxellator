@@ -253,8 +253,9 @@ ChunkMesh *createSampleMesh()
 
 #endif // 0
 
-void initChunkMesh(ChunkMesh *mesh)
+ChunkMesh* createChunkMesh()
 {
+	ChunkMesh *mesh = calloc(1, sizeof(ChunkMesh));
 	glGenVertexArrays(1, &mesh->vaoId);
 	glGenBuffers(2, mesh->ids);
 
@@ -276,6 +277,12 @@ void initChunkMesh(ChunkMesh *mesh)
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	return mesh;
+}
+
+void deleteChunkMesh(ChunkMesh *mesh)
+{
 }
 
 void uploadChunkMesh(ChunkMesh *mesh)
@@ -283,7 +290,7 @@ void uploadChunkMesh(ChunkMesh *mesh)
 	// TODO: Make this more intelligent, use bufferSubData conditionally
 	glBindBuffer(GL_ARRAY_BUFFER, mesh->vboId);
 	glBufferData(GL_ARRAY_BUFFER,
-		mesh->numVertices * sizeof(VertexColorNormal10),
+		mesh->usedVertices * sizeof(VertexColorNormal10),
 		mesh->vertices,
 		GL_STATIC_DRAW); // TODO: Profile usage if we add mutability
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -299,14 +306,14 @@ void uploadChunkMesh(ChunkMesh *mesh)
 	}
 }
 
-// TODO: Add local transform uniform
+// TODO: Add local transform uniform update
 void renderChunkMesh(ChunkMesh *mesh)
 {
 	glBindVertexArray(mesh->vaoId);
 	switch(mesh->mode)
 	{
 		case INDEX_TRIS:
-		glDrawArrays(GL_TRIANGLES, 0, mesh->numVertices);
+		glDrawArrays(GL_TRIANGLES, 0, mesh->usedVertices);
 		break;
 
 		case INDEX_CUSTOM:
