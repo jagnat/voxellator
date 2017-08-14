@@ -7,6 +7,7 @@
 
 void meshVanillaNaive(Chunk *chunk, ChunkMesh *mesh);
 void meshVanillaCull(Chunk *chunk, ChunkMesh *mesh);
+void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh);
 
 #endif // _VOX_MESHER_H_
 

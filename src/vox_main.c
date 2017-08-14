@@ -2,6 +2,8 @@
 
 #include "vox_platform.h"
 #include "vox_render.h"
+#include "vox_world.h"
+#include "vox_mesher.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -14,7 +16,8 @@
 PlatformState *platform;
 SimState *sim;
 
-//ChunkMesh *myMesh;
+ChunkMesh *myMesh;
+Chunk *perlinChunk;
 
 void init(PlatformState *plat)
 {
@@ -26,7 +29,13 @@ void init(PlatformState *plat)
 	sim->movement.yaw = M_PI + M_PI / 4;
 	sim->movement.pitch = -M_PI / 5;
 	initRender();
-	//myMesh = createSampleMesh();
+
+	perlinChunk = createPerlinChunk(0, 0, 0);
+	myMesh = createChunkMesh(20000000);
+
+	//meshVanillaNaive(perlinChunk, myMesh);
+	meshVanillaCull(perlinChunk, myMesh);
+	uploadChunkMesh(myMesh);
 }
 
 void handleEvents();
@@ -39,7 +48,7 @@ void tick(double delta)
 	buildMovementFromControls();
 
 	setCam(sim->movement);
-	//renderChunkMesh(myMesh);
+	renderChunkMesh(myMesh);
 }
 
 void buildMovementFromControls()
@@ -158,4 +167,5 @@ void handleEvents()
 #include "vox_render.c"
 #include "vox_noise.c"
 #include "vox_mesher.c"
+#include "vox_world.c"
 
