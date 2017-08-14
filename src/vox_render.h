@@ -23,7 +23,7 @@ typedef union
 
 typedef struct
 {
-	short x, y, z, w;
+	int16 x, y, z, w;
 	Color color;
 	uint normal;
 } VertexColorNormal10;
@@ -41,7 +41,7 @@ typedef struct
 	int usedVertices;
 	VertexColorNormal10 *vertices;
 
-	IndexMode mode;
+	IndexMode indexMode;
 	int numIndices;
 	uint *indices;
 
@@ -64,12 +64,12 @@ typedef enum
 
 void initRender();
 
-void initChunkMesh(ChunkMesh *mesh);
+ChunkMesh* createChunkMesh(int allocVertices);
 void uploadChunkMesh(ChunkMesh *mesh);
 void renderChunkMesh(ChunkMesh *mesh);
 
 void setCam(Movement mov);
-//ChunkMesh *createSampleMesh();
+ChunkMesh *createSampleMesh();
 
 #endif // _VOX_RENDER_H_
 

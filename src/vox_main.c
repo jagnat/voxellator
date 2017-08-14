@@ -157,4 +157,5 @@ void handleEvents()
 
 #include "vox_render.c"
 #include "vox_noise.c"
+#include "vox_mesher.c"
 

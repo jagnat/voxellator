@@ -133,6 +133,8 @@ void initRender()
 	}
 }
 
+#if 0
+
 void setPos(VertexColorNormal10 *v, int *count, short x, short y, short z)
 {
 	v[*count].x = x;
@@ -141,8 +143,6 @@ void setPos(VertexColorNormal10 *v, int *count, short x, short y, short z)
 	*count = *count + 1;
 }
 
-
-#if 0
 uint8 cubeTable[] =
 {
 0, 0, 0, // -x
@@ -231,9 +231,7 @@ ChunkMesh *createSampleMesh()
 		}
 	}
 
-	ChunkMesh *mesh = malloc(sizeof(ChunkMesh) + sizeof(VertexColorNormal10) * num * 24);
-	initChunkMesh(mesh);
-	mesh->vertices = (VertexColorNormal10*)(mesh + 1);
+	ChunkMesh *mesh = createChunkMesh(num * 24);
 	mesh->numVertices = num * 24;
 	mesh->numIndices = num * 36;
 
@@ -251,11 +249,13 @@ ChunkMesh *createSampleMesh()
 	return mesh;
 }
 
-#endif // 0
+#endif
 
-ChunkMesh* createChunkMesh()
+ChunkMesh* createChunkMesh(int allocVertices)
 {
-	ChunkMesh *mesh = calloc(1, sizeof(ChunkMesh));
+	ChunkMesh *mesh = calloc(1, sizeof(ChunkMesh) + allocVertices * sizeof(VertexColorNormal10));
+	mesh->vertices = (VertexColorNormal10*)(mesh + 1);
+	mesh->allocatedVertices = allocVertices;
 	glGenVertexArrays(1, &mesh->vaoId);
 	glGenBuffers(2, mesh->ids);
 
@@ -295,12 +295,12 @@ void uploadChunkMesh(ChunkMesh *mesh)
 		GL_STATIC_DRAW); // TODO: Profile usage if we add mutability
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
-	if (mesh->mode != INDEX_TRIS)
+	if (mesh->indexMode != INDEX_TRIS)
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->iboId);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
 			mesh->numIndices * sizeof(uint),
-			mesh->mode == INDEX_QUADS ? render->quadIndices : mesh->indices,
+			mesh->indexMode == INDEX_QUADS ? render->quadIndices : mesh->indices,
 			GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
@@ -310,7 +310,7 @@ void uploadChunkMesh(ChunkMesh *mesh)
 void renderChunkMesh(ChunkMesh *mesh)
 {
 	glBindVertexArray(mesh->vaoId);
-	switch(mesh->mode)
+	switch(mesh->indexMode)
 	{
 		case INDEX_TRIS:
 		glDrawArrays(GL_TRIANGLES, 0, mesh->usedVertices);

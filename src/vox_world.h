@@ -2,9 +2,12 @@
 #ifndef _VOX_WORLD_H_
 #define _VOX_WORLD_H_
 
+#define CHUNK_SIZE 64
+
 typedef struct
 {
 	bool empty;
+	int filledVoxels;
 	uint8 *data;
 	int x, y, z;
 } Chunk;
