@@ -1,2 +1,4 @@
 @echo off
-del *.exe *.ilk *.obj *.pdb
+cd %~dp0
+del *.exe *.ilk *.obj *.pdb *.suo
+rmdir shaders /s /q
