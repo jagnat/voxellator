@@ -1,5 +1,6 @@
 @echo off
-
+cd %~dp0
+xcopy "../src/shaders" "shaders" /i /y > nul
 set output=vox.exe
 set cflags=/nologo /MT /Zi
 set libs=LIBCMT.lib User32.lib Gdi32.lib OpenGL32.lib
