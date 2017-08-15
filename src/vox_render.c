@@ -85,7 +85,8 @@ void initRender()
 	glDepthFunc(GL_LEQUAL);
 
 	// TODO: Don't use stdio for file io, make this part of platform
-	FILE *shaderfile = fopen("vertex.glsl", "r");
+	// TODO: Hotloading
+	FILE *shaderfile = fopen("shaders/vertex.glsl", "r");
 	if (!shaderfile)
 		printf("Couldn't load vertex file!\n");
 	fseek(shaderfile, 0, SEEK_END);
@@ -95,7 +96,7 @@ void initRender()
 	fread(vertexFile, 1, filesize, shaderfile);
 	fclose(shaderfile);
 
-	shaderfile = fopen("fragment.glsl", "r");
+	shaderfile = fopen("shaders/fragment.glsl", "r");
 	if (!shaderfile)
 		printf("Couldn't load fragment file!\n");
 	fseek(shaderfile, 0, SEEK_END);
