@@ -16,8 +16,8 @@
 PlatformState *platform;
 SimState *sim;
 
-ChunkMesh *myMesh;
-Chunk *perlinChunk;
+ChunkMesh *meshes[3];
+Chunk *chunks[3];
 
 void init(PlatformState *plat)
 {
@@ -30,12 +30,16 @@ void init(PlatformState *plat)
 	sim->movement.pitch = -M_PI / 5;
 	initRender();
 
-	perlinChunk = createPerlinChunk(0, 0, 0);
-	myMesh = createChunkMesh(20000000);
-
-	//meshVanillaNaive(perlinChunk, myMesh);
-	meshVanillaCull(perlinChunk, myMesh);
-	uploadChunkMesh(myMesh);
+	for (int i = 0; i < 3; i++)
+	{
+		chunks[i] = createPerlinChunk(0, 0, i);
+		meshes[i] = createChunkMesh(20000000);
+	}
+	meshVanillaNaive(chunks[0], meshes[0]);
+	meshVanillaCull(chunks[1], meshes[1]);
+	meshVanillaCull(chunks[2], meshes[2]);
+	for (int i = 0; i < 3; i++)
+		uploadChunkMesh(meshes[i]);
 }
 
 void handleEvents();
@@ -48,7 +52,8 @@ void tick(double delta)
 	buildMovementFromControls();
 
 	setCam(sim->movement);
-	renderChunkMesh(myMesh);
+	for (int i = 0; i < 3; i++)
+		renderChunkMesh(meshes[i]);
 }
 
 void buildMovementFromControls()

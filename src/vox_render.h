@@ -45,6 +45,8 @@ typedef struct
 	int numIndices;
 	uint *indices;
 
+	JMat4 modelMatrix;
+
 	// TODO: Sub-struct this, decouple from OpenGL
 	union
 	{

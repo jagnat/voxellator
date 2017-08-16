@@ -1,11 +1,11 @@
 #include "vox_mesher.h"
 
+// TODO: Encode some information in w
 typedef struct
 {
-	int16 x, y, z, w;
+	int16 x, y, z;
 	Color color;
 	uint normal;
-	uint8 sideMask; // bit 0=x-, 1=x+, 2=y-, etc.
 	int numFaces;
 	VertexColorNormal10 *current;
 } MeshBuildContext;
@@ -60,7 +60,7 @@ void addVertex(MeshBuildContext *context)
 	context->current->x = context->x;
 	context->current->y = context->y;
 	context->current->z = context->z;
-	context->current->w = context->w;
+	context->current->w = 1; 
 	context->current++;
 }
 
@@ -74,9 +74,14 @@ void addFace(int face, MeshBuildContext *context)
 		v->x = context->x + facePosTable[face * 12 + i * 3 + 0];
 		v->y = context->y + facePosTable[face * 12 + i * 3 + 1];
 		v->z = context->z + facePosTable[face * 12 + i * 3 + 2];
+		v->w = 1;
 		context->current++;
 	}
 	context->numFaces++;
+}
+
+void addRect(MeshBuildContext *context)
+{
 }
 
 void addCube(MeshBuildContext *context)
@@ -89,13 +94,19 @@ void addCube(MeshBuildContext *context)
 		context->x = x + facePosTable[i * 3 + 0];
 		context->y = y + facePosTable[i * 3 + 1];
 		context->z = z + facePosTable[i * 3 + 2];
-		context->w = 0;
 		addVertex(context);
 	}
 }
 
+void setModelMatrix(Chunk *chunk, ChunkMesh *mesh)
+{
+	mesh->modelMatrix = JMat4_Translate(chunk->x * CHUNK_SIZE, chunk->y * CHUNK_SIZE, chunk->z * CHUNK_SIZE);
+}
+
 void meshVanillaNaive(Chunk *chunk, ChunkMesh *mesh)
 {
+	setModelMatrix(chunk, mesh);
+
 	mesh->indexMode = INDEX_QUADS;
 	mesh->usedVertices = chunk->filledVoxels * 24;
 	mesh->numIndices = chunk->filledVoxels * 36;
@@ -117,6 +128,8 @@ void meshVanillaNaive(Chunk *chunk, ChunkMesh *mesh)
 
 void meshVanillaCull(Chunk *chunk, ChunkMesh *mesh)
 {
+	setModelMatrix(chunk, mesh);
+
 	mesh->indexMode = INDEX_QUADS;
 
 	MeshBuildContext context = {0};
@@ -151,5 +164,53 @@ void meshVanillaCull(Chunk *chunk, ChunkMesh *mesh)
 
 void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 {
+	setModelMatrix(chunk, mesh);
+	mesh->indexMode = INDEX_QUADS;
+
+	MeshBuildContext context = {0};
+	context.current = mesh->vertices;
+	context.color.g=context.color.b=context.color.a=255;
+
+	uint8 *mask = calloc(1, sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE);
+	
+	for (int x = 0; x < CHUNK_SIZE; x++)
+	{
+		int n = 0;
+		memset(mask, 0, sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE);
+		while (n < CHUNK_SIZE * CHUNK_SIZE)
+		{
+			if (!chunk_getBlockUnchecked(chunk, x, n / CHUNK_SIZE, n % CHUNK_SIZE))
+			{
+				n++;
+				continue;
+			}
+			else if (!mask[n]) // Tile hasn't been added to quads yet
+			{
+
+			}
+		}
+	}
+
+	
+#if 0
+	for (int y = 0; y < CHUNK_SIZE; y++)
+	{
+		memset(mask, 0, sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE);
+		for (int x = 0; x < CHUNK_SIZE; x++)
+			for (int z = 0; x < CHUNK_SIZE; z++)
+			{
+			}
+	}
+
+
+	for (int z = 0; z < CHUNK_SIZE; z++)
+	{
+		memset(mask, 0, sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE);
+		for (int x = 0; x < CHUNK_SIZE; x++)
+			for (int y = 0; y < CHUNK_SIZE; y++)
+			{
+			}
+	}
+#endif
 }
 

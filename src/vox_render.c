@@ -55,7 +55,7 @@ typedef struct
 	uint *quadIndices;
 	JMat4 projMatrix;
 	JMat4 viewMatrix;
-	int viewLoc, projLoc;
+	int viewLoc, projLoc, modelLoc;
 } RenderState;
 
 RenderState ___rs = {0};
@@ -113,8 +113,9 @@ void initRender()
 
 	render->viewLoc = glGetUniformLocation(render->programId, "viewMatrix");
 	render->projLoc = glGetUniformLocation(render->programId, "projMatrix");
+	render->modelLoc = glGetUniformLocation(render->programId, "modelMatrix");
 
-	if (render->viewLoc == -1 || render->projLoc == -1)
+	if (render->viewLoc == -1 || render->projLoc == -1 || render->modelLoc == -1)
 		printf("failed to grabu niform locations!\n");
 	
 	render->viewMatrix = JMat4_Identity();
@@ -192,6 +193,8 @@ void uploadChunkMesh(ChunkMesh *mesh)
 // TODO: Add local transform uniform update
 void renderChunkMesh(ChunkMesh *mesh)
 {
+	glUniformMatrix4fv(render->modelLoc, 1, false, mesh->modelMatrix.flat);
+
 	glBindVertexArray(mesh->vaoId);
 	switch(mesh->indexMode)
 	{
