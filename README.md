@@ -6,7 +6,7 @@ This is also an experiment in using minimal libraries and external code bases.
 I'm rolling my own platform layers to practice platform abstraction (although I have only done
 Win32 at the moment). I do use the CRT, but I may move away from it in the future.
 
-The project is written in C. I some C99 features, such as declare anywhere and single-line comments.
+The project is written in C. I use some C99 features, such as declare anywhere and single-line comments.
 
 ## The Gist
 
@@ -19,7 +19,7 @@ vox_main.c, which in turn #includes all other source files.
 
 ### Building
 
-Build scripts reside in each platform-specific folder, and invoke the compiler of the given platform.
+Build scripts reside in each platform-specific folder, and invoke the compiler for the given platform.
 They also copy shaders and any other resources to the working directory.
 
 On Win32 I compile with Visual Studio 2015, and try to maintain compatibility with 2013 and 2017.
@@ -34,3 +34,10 @@ The platform calls init() once, and then tick() at 60fps, in vox_main.c.
 Some of the platform code is pretty sketchy right now.
 
 TODO: Add more stuff here
+
+## TODO
+
+- [x] Culled meshing
+- [ ] Greedy meshing
+- [ ] Dynamic chunk loading
+- [ ] ???
