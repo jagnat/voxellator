@@ -1,5 +1,17 @@
 #include "vox_mesher.h"
 
+typedef union
+{
+	struct
+	{
+		int16 x0, y0, z0;
+		int16 x1, y1, z1;
+		int16 x2, y2, z2;
+		int16 x3, y3, z3;
+	};
+	int16 verts[12];
+} FaceRect;
+
 // TODO: Encode some information in w
 typedef struct
 {
@@ -80,7 +92,7 @@ void addFace(int face, MeshBuildContext *context)
 	context->numFaces++;
 }
 
-void addRect(MeshBuildContext *context)
+void addRect(MeshBuildContext *context, FaceRect rect)
 {
 }
 
@@ -184,7 +196,11 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 				n++;
 				continue;
 			}
-			else if (!mask[n]) // Tile hasn't been added to quads yet
+			else if (!(mask[n] & 0x01))
+			{
+
+			}
+			else if (!(mask[n] & 0x02))
 			{
 
 			}
@@ -201,7 +217,6 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 			{
 			}
 	}
-
 
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
