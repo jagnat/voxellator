@@ -21,6 +21,10 @@ typedef union
 	uint8 element[4];
 } Color;
 
+Color COLOR_RED = {255, 0, 0, 255};
+Color COLOR_GREEN = {0, 255, 0, 255};
+Color COLOR_BLUE = {0, 0, 255, 255};
+
 typedef struct
 {
 	int16 x, y, z, w;

@@ -58,7 +58,7 @@ uint8 chunk_getBlockUnchecked(Chunk *chunk, int x, int y, int z)
 { return chunk->data[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE]; }
 
 
-uint8 chunk_GetBlockChecked(Chunk *chunk, int x, int y, int z)
+uint8 chunk_getBlockChecked(Chunk *chunk, int x, int y, int z)
 {
 	if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE)
 		return 0;

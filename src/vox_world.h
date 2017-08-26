@@ -29,7 +29,7 @@ void setChunkCoords(Chunk *chunk, int x, int y, int z);
 Chunk* createPerlinChunk(int x, int y, int z);
 
 uint8 chunk_getBlockUnchecked(Chunk *chunk, int x, int y, int z);
-uint8 chunk_GetBlockChecked(Chunk *chunk, int x, int y, int z);
+uint8 chunk_getBlockChecked(Chunk *chunk, int x, int y, int z);
 void chunk_setBlockUnchecked(Chunk *chunk, uint8 val, int x, int y, int z);
 void chunk_setBlockChecked(Chunk *chunk, uint8 val, int x, int y, int z);
 

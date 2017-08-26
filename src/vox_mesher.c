@@ -155,17 +155,17 @@ void meshVanillaCull(Chunk *chunk, ChunkMesh *mesh)
 				context.x = x; context.y = y; context.z = z;
 				if (chunk_getBlockUnchecked(chunk, x, y, z))
 				{
-					if (!chunk_GetBlockChecked(chunk, x - 1, y, z))
+					if (!chunk_getBlockChecked(chunk, x - 1, y, z))
 						addFace(0, &context);
-					if (!chunk_GetBlockChecked(chunk, x + 1, y, z))
+					if (!chunk_getBlockChecked(chunk, x + 1, y, z))
 						addFace(1, &context);
-					if (!chunk_GetBlockChecked(chunk, x, y - 1, z))
+					if (!chunk_getBlockChecked(chunk, x, y - 1, z))
 						addFace(2, &context);
-					if (!chunk_GetBlockChecked(chunk, x, y + 1, z))
+					if (!chunk_getBlockChecked(chunk, x, y + 1, z))
 						addFace(3, &context);
-					if (!chunk_GetBlockChecked(chunk, x, y, z - 1))
+					if (!chunk_getBlockChecked(chunk, x, y, z - 1))
 						addFace(4, &context);
-					if (!chunk_GetBlockChecked(chunk, x, y, z + 1))
+					if (!chunk_getBlockChecked(chunk, x, y, z + 1))
 						addFace(5, &context);
 				}
 			}
@@ -183,30 +183,103 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 	context.current = mesh->vertices;
 	context.color.g=context.color.b=context.color.a=255;
 
-	uint8 *mask = calloc(1, sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE);
+	uint8 *mask = malloc(sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE);
+
+	int vertCap = 512, vertLen = 0;
+	VertexColorNormal10 *vert;
+
+	vert = malloc(sizeof(VertexColorNormal10) * vertCap);
 	
+	// TODO: Make this dimension-agnostic
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
 		int n = 0;
 		memset(mask, 0, sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE);
+
 		while (n < CHUNK_SIZE * CHUNK_SIZE)
 		{
-			if (!chunk_getBlockUnchecked(chunk, x, n / CHUNK_SIZE, n % CHUNK_SIZE))
+			int i = n / CHUNK_SIZE, j = n % CHUNK_SIZE; // Rectangle anchor (top left)
+
+			if (!chunk_getBlockUnchecked(chunk, x, i, j) ||
+				(chunk_getBlockChecked(chunk, x - 1, i, j) && chunk_getBlockChecked(chunk, x + 1, i, j))
+				|| (mask[n] & 0x01 && mask[n] & 0x02))
 			{
 				n++;
 				continue;
 			}
-			else if (!(mask[n] & 0x01))
+			else
 			{
+				int a = 1, b = 1; // Rectangle width/height
+				if (!(mask[n] & 0x01))
+				{
+					while (i + a < CHUNK_SIZE && chunk_getBlockUnchecked(chunk, x, i, j) &&
+						!chunk_getBlockChecked(chunk, x + 1, i + a, j) &&
+						!(mask[(i + a) * CHUNK_SIZE + j] & 0x01))
+					{
+						a++;
+						mask[(i + a) * CHUNK_SIZE + j] |= 0x01;
+					}
 
-			}
-			else if (!(mask[n] & 0x02))
-			{
+					while (j + b < CHUNK_SIZE)
+					{
+						bool done = false;
+						for (int p = 0; p < a; p++)
+							if (!chunk_getBlockChecked(chunk, x, i + p, j + b) ||
+								chunk_getBlockChecked(chunk, x + 1, i + p, j + b))
+							{
+								done = true;
+								break;
+							}
+						if (done)
+							break;
 
+						for (int p = 0; p < a; p++)
+							mask[(i + p) * CHUNK_SIZE + j + b] |= 0x01;
+						b++;
+					}
+
+					if (vertLen + 4 >= vertCap) // Expand buffer
+					{
+						if (vertCap * 2 >= 67108864)
+						{
+							printf("Exeeding bounds! Exiting...\n");
+							exit(300);
+						}
+						vertCap *= 2;
+						vert = realloc(vert, vertCap * sizeof(VertexColorNormal10));
+					}
+
+					VertexColorNormal10 *cV = vert + vertLen;
+
+
+					cV[0].normal = cV[1].normal = cV[2].normal = cV[3].normal = faceNormTable[1];
+					Color mag = {n * 255 / (CHUNK_SIZE * CHUNK_SIZE), 0, 255, 255};
+					cV[0].color = cV[1].color = cV[2].color = cV[3].color = mag;
+					cV[0].x = cV[1].x = cV[2].x = cV[3].x = x + 1;
+					cV[0].w = cV[1].w = cV[2].w = cV[3].w = 0;
+
+					cV[0].y = i; cV[0].z = j;
+					cV[1].y = i + a; cV[1].z = j;
+					cV[2].y = i + a; cV[2].z = j + b;
+					cV[3].y = i; cV[3].z = j + b;
+					vertLen += 4;
+					
+				}
+	
+				n += a;
+
+				if (!(mask[n] & 0x02))
+				{
+				}
 			}
 		}
 	}
 
+	memcpy(mesh->vertices, vert, vertLen * sizeof(VertexColorNormal10));
+	free(vert);
+
+	mesh->usedVertices = vertLen;
+	mesh->numIndices = (vertLen / 4) * 6;
 	
 #if 0
 	for (int y = 0; y < CHUNK_SIZE; y++)

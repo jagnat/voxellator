@@ -32,12 +32,13 @@ void init(PlatformState *plat)
 
 	for (int i = 0; i < 3; i++)
 	{
-		chunks[i] = createPerlinChunk(0, 0, i);
+		chunks[i] = createPerlinChunk(0, 0, 0);
+		chunks[i]->z = i;
 		meshes[i] = createChunkMesh(20000000);
 	}
 	meshVanillaNaive(chunks[0], meshes[0]);
 	meshVanillaCull(chunks[1], meshes[1]);
-	meshVanillaCull(chunks[2], meshes[2]);
+	meshVanillaGreedy(chunks[2], meshes[2]);
 	for (int i = 0; i < 3; i++)
 		uploadChunkMesh(meshes[i]);
 }
