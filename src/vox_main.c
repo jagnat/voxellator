@@ -99,6 +99,10 @@ void buildMovementFromControls()
 		mov->pos.y += MV_DELTA;
 	if (con->down)
 		mov->pos.y -= MV_DELTA;
+	
+	// TODO: Add this to text rendering, once we have that
+	//if (con->forward || con->backward || con->left || con->right || con->up || con->down)
+	//	printf("pos = x:%.2f y:%.2f z:%.2f\n", mov->pos.x, mov->pos.y, mov->pos.z);
 }
 
 void handleEvents()

@@ -4,7 +4,7 @@
 
 #include "vox_platform.h"
 
-#define CHUNK_SIZE 64
+#define CHUNK_SIZE 32
 
 typedef struct
 {
