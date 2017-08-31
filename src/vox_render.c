@@ -81,8 +81,11 @@ void initRender()
 	render = &___rs;
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
-	//glEnable(GL_CULL_FACE);
 	glDepthFunc(GL_LEQUAL);
+
+	glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CCW);
+	glCullFace(GL_BACK);
 
 	// TODO: Don't use stdio for file io, make this part of platform
 	// TODO: Hotloading

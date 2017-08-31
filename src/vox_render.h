@@ -27,7 +27,14 @@ Color COLOR_BLUE = {0, 0, 255, 255};
 
 typedef struct
 {
-	int16 x, y, z, w;
+	union
+	{
+		struct
+		{
+			int16 x, y, z, w;
+		};
+		int16 element[4];
+	};
 	Color color;
 	uint normal;
 } VertexColorNormal10;
