@@ -175,6 +175,35 @@ void meshVanillaCull(Chunk *chunk, ChunkMesh *mesh)
 	mesh->numIndices = context.numFaces * 6;
 }
 
+bool greedy_getMaskJK(uint8 *mask, int j, int k) { return mask[j * CHUNK_SIZE + k]; }
+void greedy_setMaskJK(uint8 *mask, int j, int k) { mask[j * CHUNK_SIZE + k] = 1; }
+
+uint8 greedy_getC(Chunk *chunk, int dim, int i, int j, int k)
+{
+	int p[3];
+	p[dim] = i;
+	p[(dim + 1) % 3] = j;
+	p[(dim + 2) % 3] = k;
+	return chunk_getBlockChecked(chunk, p[0], p[1], p[2]);
+}
+
+uint8 greedy_getU(Chunk *chunk, int dim, int i, int j, int k)
+{
+	int p[3];
+	p[dim] = i;
+	p[(dim + 1) % 3] = j;
+	p[(dim + 2) % 3] = k;
+	return chunk_getBlockUnchecked(chunk, p[0], p[1], p[2]);
+}
+
+void greedy_setV(VertexColorNormal10 *vert, int dim, int16 i, int16 j, int16 k)
+{
+	vert->element[dim] = i;
+	vert->element[(dim + 1) % 3] = j;
+	vert->element[(dim + 2) % 3] = k;
+	vert->w=0;
+}
+
 void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 {
 	setModelMatrix(chunk, mesh);
@@ -184,115 +213,107 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 	context.current = mesh->vertices;
 	context.color.g=context.color.b=context.color.a=255;
 
+	// Mask - used to store whether or not a face is in a greedy rect yet
 	uint8 *mask = malloc(sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE);
 
+	// Dynamic buffer for vertices
 	int vertCap = 512, vertLen = 0;
 	VertexColorNormal10 *vert;
-
 	vert = malloc(sizeof(VertexColorNormal10) * vertCap);
-	
-	// TODO: Make this dimension-agnostic
-	for (int x = 0; x < CHUNK_SIZE; x++)
+
+	for (int dim = 0; dim < 3; dim++) // Iterate through three dimensions
 	{
-		memset(mask, 0, sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE);
-
-		for (int i = 0; i < CHUNK_SIZE; i++)
-		for (int j = 0; j < CHUNK_SIZE; j++)
+		for (int face = -1; face < 2; face += 2) // Iterate through each dimension twice, for each face
 		{
-			if (!chunk_getBlockUnchecked(chunk, x, i, j) ||
-				(chunk_getBlockChecked(chunk, x - 1, i, j) && chunk_getBlockChecked(chunk, x + 1, i, j))
-				|| (mask[i * CHUNK_SIZE + j] & 0x01))
-				continue;
-			else
+			for (int i = 0; i < CHUNK_SIZE; i++) // Dimension we are currently building faces for
 			{
-				int a = 1, b = 1; // Rectangle width/height
-				if (!(mask[i * CHUNK_SIZE + j] & 0x01))
+				memset(mask, 0, sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE); // Clear mask
+				for (int j = 0; j < CHUNK_SIZE; j++) // Iterate through the rect of the current face
+				for (int k = 0; k < CHUNK_SIZE; k++)
 				{
-					while (i + a < CHUNK_SIZE && chunk_getBlockUnchecked(chunk, x, i + a, j) &&
-						!chunk_getBlockChecked(chunk, x - 1, i + a, j) &&
-						!(mask[(i + a) * CHUNK_SIZE + j] & 0x01))
+					if (greedy_getU(chunk, dim, i, j, k) &&
+						!greedy_getC(chunk, dim, i + face, j, k) &&
+						!greedy_getMaskJK(mask, j, k))
 					{
-						mask[(i + a) * CHUNK_SIZE + j] |= 0x01;
-						a++;
-					}
+						int a = 1, b = 1; // Height/width of greedy rect
+						greedy_setMaskJK(mask, j, k);
 
-					while (j + b < CHUNK_SIZE)
-					{
-						bool done = false;
-						for (int p = 0; p < a; p++)
-							if (!chunk_getBlockChecked(chunk, x, i + p, j + b) ||
-								chunk_getBlockChecked(chunk, x - 1, i + p, j + b) ||
-								mask[(i + p) * CHUNK_SIZE + j + b])
-							{
-								done = true;
-								break;
-							}
-						if (done)
-							break;
-
-						for (int p = 0; p < a; p++)
-							mask[(i + p) * CHUNK_SIZE + j + b] |= 0x01;
-						b++;
-					}
-
-					if (vertLen + 4 >= vertCap) // Expand buffer
-					{
-						if (vertCap * 2 >= 67108864)
+						// Expand horizontally
+						while (j + a < CHUNK_SIZE &&
+							greedy_getU(chunk, dim, i, j + a, k) &&
+							!greedy_getC(chunk, dim, i + face, j + a, k) &&
+							!greedy_getMaskJK(mask, j + a, k))
 						{
-							printf("Exeeding bounds! Exiting...\n");
-							exit(300);
+							greedy_setMaskJK(mask, j + a, k);
+							a++;
 						}
-						vertCap *= 2;
-						vert = realloc(vert, vertCap * sizeof(VertexColorNormal10));
+
+						// Expand horizontal strip vertically
+						while (k + b < CHUNK_SIZE)
+						{
+							bool rowInvalid = false;
+							for (int p = 0; p < a; p++)
+								if (!greedy_getU(chunk, dim, i, j + p, k + b) ||
+									greedy_getC(chunk, dim, i + face, j + p, k + b) ||
+									greedy_getMaskJK(mask, j + p, k + b))
+								{
+									rowInvalid = true;
+									break;
+								}
+
+							if (rowInvalid)
+								break;
+
+							for (int p = 0; p < a; p++)
+								greedy_setMaskJK(mask, j + p, k + b);
+
+							b++;
+						}
+
+						if (vertLen + 4 >= vertCap) // Grow temp buffer
+						{
+							if (vertCap * 2 >= 67108864)
+							{
+								printf("Exeeding bounds! Exiting...\n");
+								exit(300);
+							}
+							vertCap *= 2;
+							vert = realloc(vert, vertCap * sizeof(VertexColorNormal10));
+						}
+	
+						VertexColorNormal10 *cV = vert + vertLen;
+	
+						uint norm = faceNormTable[dim * 2 + (face == -1 ? 0 : 1)];
+
+						cV[0].normal = cV[1].normal = cV[2].normal = cV[3].normal = norm;
+						Color mag = {255, 0, 0, 255};
+						cV[0].color = cV[1].color = cV[2].color = cV[3].color = mag;
+
+						// Handle CCW culling and side offset
+						if (face == 1)
+						{
+							greedy_setV(&cV[0], dim, i + 1, j, k);
+							greedy_setV(&cV[1], dim, i + 1, j, k+b);
+							greedy_setV(&cV[2], dim, i + 1, j+a, k+b);
+							greedy_setV(&cV[3], dim, i + 1, j+a, k);
+						}
+						else
+						{
+							greedy_setV(&cV[0], dim, i, j, k);
+							greedy_setV(&cV[1], dim, i, j+a, k);
+							greedy_setV(&cV[2], dim, i, j+a, k+b);
+							greedy_setV(&cV[3], dim, i, j, k+b);
+						}
+						vertLen += 4;
 					}
-
-					VertexColorNormal10 *cV = vert + vertLen;
-
-
-					cV[0].normal = cV[1].normal = cV[2].normal = cV[3].normal = faceNormTable[1];
-					//Color mag = {n * 255 / (CHUNK_SIZE * CHUNK_SIZE), 0, 0, 255};
-					//Color mag = {i * 255 / CHUNK_SIZE, 0, j * 255 / CHUNK_SIZE, 255};
-					Color mag = {rand() % 128, rand() % 50, rand() % 255, 255};
-					//Color mag = {128, 0, x * 255 / CHUNK_SIZE, 255};
-					cV[0].color = cV[1].color = cV[2].color = cV[3].color = mag;
-					cV[0].x = cV[1].x = cV[2].x = cV[3].x = x;
-					cV[0].w = cV[1].w = cV[2].w = cV[3].w = 0;
-
-					cV[0].y = i; cV[0].z = j;
-					cV[1].y = i + a; cV[1].z = j;
-					cV[2].y = i + a; cV[2].z = j + b;
-					cV[3].y = i; cV[3].z = j + b;
-					vertLen += 4;
-					
 				}
 			}
 		}
 	}
-
+	
 	memcpy(mesh->vertices, vert, vertLen * sizeof(VertexColorNormal10));
 	free(vert);
-
 	mesh->usedVertices = vertLen;
 	mesh->numIndices = (vertLen / 4) * 6;
-	
-#if 0
-	for (int y = 0; y < CHUNK_SIZE; y++)
-	{
-		memset(mask, 0, sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE);
-		for (int x = 0; x < CHUNK_SIZE; x++)
-			for (int z = 0; x < CHUNK_SIZE; z++)
-			{
-			}
-	}
-
-	for (int z = 0; z < CHUNK_SIZE; z++)
-	{
-		memset(mask, 0, sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE);
-		for (int x = 0; x < CHUNK_SIZE; x++)
-			for (int y = 0; y < CHUNK_SIZE; y++)
-			{
-			}
-	}
-#endif
 }
 
