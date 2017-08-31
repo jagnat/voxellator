@@ -38,6 +38,6 @@ TODO: Add more stuff here
 ## TODO
 
 - [x] Culled meshing
-- [ ] Greedy meshing
+- [x] Greedy meshing
 - [ ] Dynamic chunk loading
 - [ ] ???
