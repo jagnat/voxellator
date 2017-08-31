@@ -1,17 +1,5 @@
 #include "vox_mesher.h"
 
-typedef union
-{
-	struct
-	{
-		int16 x0, y0, z0;
-		int16 x1, y1, z1;
-		int16 x2, y2, z2;
-		int16 x3, y3, z3;
-	};
-	int16 verts[12];
-} FaceRect;
-
 // TODO: Encode some information in w
 typedef struct
 {
@@ -90,10 +78,6 @@ void addFace(int face, MeshBuildContext *context)
 		context->current++;
 	}
 	context->numFaces++;
-}
-
-void addRect(MeshBuildContext *context, FaceRect rect)
-{
 }
 
 void addCube(MeshBuildContext *context)
