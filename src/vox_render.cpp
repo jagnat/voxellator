@@ -62,7 +62,7 @@ RenderState ___rs = {0};
 RenderState *render;
 
 uint createGlProgram(char *vertex, char *fragment);
-uint loadGlShader(char *filedata, ShaderType shaderType);
+uint loadGlShader(const char *filedata, ShaderType shaderType);
 
 void initRender()
 {
@@ -95,7 +95,7 @@ void initRender()
 	fseek(shaderfile, 0, SEEK_END);
 	int filesize = ftell(shaderfile);
 	rewind(shaderfile);
-	char *vertexFile = calloc(1, filesize * sizeof(char) + 1);
+	char *vertexFile = (char*)calloc(1, filesize * sizeof(char) + 1);
 	fread(vertexFile, 1, filesize, shaderfile);
 	fclose(shaderfile);
 
@@ -105,7 +105,7 @@ void initRender()
 	fseek(shaderfile, 0, SEEK_END);
 	filesize = ftell(shaderfile);
 	rewind(shaderfile);
-	char *fragmentFile = calloc(1, filesize * sizeof(char) + 1);
+	char *fragmentFile = (char*)calloc(1, filesize * sizeof(char) + 1);
 	fread(fragmentFile, 1, filesize, shaderfile);
 	fclose(shaderfile);
 
@@ -126,7 +126,7 @@ void initRender()
 		1280/720.0f, 0.001f, 10000.f);
 
 	int NUM_IND = 50331648;
-	render->quadIndices = malloc(sizeof(uint) * NUM_IND);
+	render->quadIndices = (uint*)malloc(sizeof(uint) * NUM_IND);
 	for (int i = 0; i < NUM_IND / 6; i++)
 	{
 		render->quadIndices[i * 6 + 0] = i * 4 + 0;
@@ -140,7 +140,7 @@ void initRender()
 
 ChunkMesh* createChunkMesh(int allocVertices)
 {
-	ChunkMesh *mesh = calloc(1, sizeof(ChunkMesh) + allocVertices * sizeof(VertexColorNormal10));
+	ChunkMesh *mesh = (ChunkMesh*)calloc(1, sizeof(ChunkMesh) + allocVertices * sizeof(VertexColorNormal10));
 	mesh->vertices = (VertexColorNormal10*)(mesh + 1);
 	mesh->allocatedVertices = allocVertices;
 	glGenVertexArrays(1, &mesh->vaoId);
@@ -263,7 +263,7 @@ uint createGlProgram(char *vertex, char *fragment)
 	return pId;
 }
 
-uint loadGlShader(char *filedata, ShaderType shaderType)
+uint loadGlShader(const char *filedata, ShaderType shaderType)
 {
 	uint shaderId;
 	GLenum glShaderType = GL_VERTEX_SHADER;
@@ -283,7 +283,7 @@ uint loadGlShader(char *filedata, ShaderType shaderType)
 	{
 		glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &status);
 
-		char *buf = calloc(1, status * sizeof(char));
+		char *buf = (char*)calloc(1, status * sizeof(char));
 
 		glGetShaderInfoLog(shaderId, status, 0, buf);
 		printf("GL shader error!!! \n\n%s\n", buf);

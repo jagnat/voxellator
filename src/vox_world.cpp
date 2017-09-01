@@ -4,7 +4,7 @@
 
 Chunk* createEmptyChunk()
 {
-	Chunk *c = calloc(1, sizeof(Chunk));
+	Chunk *c = (Chunk*)calloc(1, sizeof(Chunk));
 	c->empty = true;
 	return c;
 }
@@ -14,7 +14,7 @@ void allocateChunkData(Chunk *chunk)
 	if (chunk->data)
 		return;
 	// TODO: error checking
-	chunk->data = calloc(1, sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE);
+	chunk->data = (uint8*)calloc(1, sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE);
 	chunk->empty = false;
 }
 

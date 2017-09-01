@@ -198,12 +198,12 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 	context.color.g=context.color.b=context.color.a=255;
 
 	// Mask - used to store whether or not a face is in a greedy rect yet
-	uint8 *mask = malloc(sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE);
+	uint8 *mask = (uint8*)malloc(sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE);
 
 	// Dynamic buffer for vertices
 	int vertCap = 512, vertLen = 0;
 	VertexColorNormal10 *vert;
-	vert = malloc(sizeof(VertexColorNormal10) * vertCap);
+	vert = (VertexColorNormal10*)malloc(sizeof(VertexColorNormal10) * vertCap);
 
 	for (int dim = 0; dim < 3; dim++) // Iterate through three dimensions
 	{
@@ -262,7 +262,7 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 								exit(300);
 							}
 							vertCap *= 2;
-							vert = realloc(vert, vertCap * sizeof(VertexColorNormal10));
+							vert = (VertexColorNormal10*)realloc(vert, vertCap * sizeof(VertexColorNormal10));
 						}
 	
 						VertexColorNormal10 *cV = vert + vertLen;

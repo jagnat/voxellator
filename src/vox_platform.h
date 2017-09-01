@@ -26,61 +26,61 @@ typedef uint64_t uint64;
 #define BUTTON_RELEASED 0
 #define BUTTON_PRESSED 1
 
-typedef enum
+enum EventType
 {
 	EVENT_KEY,
 	EVENT_MOUSE_CLICK,
 	EVENT_MOUSE_MOVE,
 	EVENT_RESIZE,
 	EVENTTYPE_LENGTH
-} EventType;
+};
 
 // TODO: Define keycodes for better agnosticity
-typedef struct
+struct KeyEvent
 {
 	uint8 keyCode;
 	uint8 state;
-} KeyEvent;
+};
 
 #define MOUSE_BUTTON_LEFT 0
 #define MOUSE_BUTTON_RIGHT 1
 
-typedef struct
+struct MouseClickEvent
 {
 	uint mouseButton;
 	uint state;
-} MouseClickEvent;
+};
 
-typedef struct
+struct MouseMoveEvent
 {
 	int x, y;
 	int dx, dy;
 
 	bool locked;
-} MouseMoveEvent;
+};
 
-typedef struct
+struct ResizeEvent
 {
 	int width, height;
-} ResizeEvent;
+};
 
-typedef struct
+struct Event
 {
 	EventType type;
 	KeyEvent key;
 	MouseClickEvent mouseClick;
 	MouseMoveEvent mouseMove;
 	ResizeEvent resize;
-} Event;
+};
 
 // NOTE: The platform must serialize/deserialize this at init/exit
-typedef struct
+struct Config
 {
 	int renderMode;
 	float mouseSensitivity;
-} Config;
+};
 
-typedef struct
+struct PlatformState
 {
 	bool running;
 	double targetDelta;
@@ -93,7 +93,7 @@ typedef struct
 	int flags;
 
 	int viewportWidth, viewportHeight;
-} PlatformState;
+};
 
 // Functions the platform calls
 void tick(double delta);

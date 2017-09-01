@@ -39,7 +39,7 @@ LRESULT CALLBACK win32_windowProc(
 	HWND window,
 	UINT message,
 	WPARAM wParam, LPARAM lParam);
-int CreateGLContext();
+int win32_createGLContext();
 double win32_elapsedMs();
 void win32_handleEvents();
 void win32_centerCursor();
@@ -251,7 +251,7 @@ LRESULT CALLBACK win32_windowProc(
 	UINT message,
 	WPARAM wParam, LPARAM lParam)
 {
-	Event e = {0};
+	Event e = {};
 
 	LRESULT result = 0;
 
@@ -482,5 +482,5 @@ double win32_elapsedMs()
 	return count / win32->timerResolution;
 }
 
-#include "vox_main.c"
+#include "vox_main.cpp"
 

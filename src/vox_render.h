@@ -6,9 +6,9 @@
 
 #include "thirdparty/j_threedee.h"
 
-typedef struct Mesh Mesh;
+struct Mesh;
 
-typedef union
+union Color
 {
 	struct
 	{
@@ -19,13 +19,13 @@ typedef union
 		uint8 red, green, blue, alpha;
 	};
 	uint8 element[4];
-} Color;
+};
 
 Color COLOR_RED = {255, 0, 0, 255};
 Color COLOR_GREEN = {0, 255, 0, 255};
 Color COLOR_BLUE = {0, 0, 255, 255};
 
-typedef struct
+struct VertexColorNormal10
 {
 	union
 	{
@@ -37,16 +37,16 @@ typedef struct
 	};
 	Color color;
 	uint normal;
-} VertexColorNormal10;
+};
 
-typedef enum
+enum IndexMode
 {
 	INDEX_QUADS,
 	INDEX_TRIS,
 	INDEX_CUSTOM
-} IndexMode;
+};
 
-typedef struct
+struct ChunkMesh
 {
 	int allocatedVertices;
 	int usedVertices;
@@ -67,13 +67,13 @@ typedef struct
 			uint vboId, iboId, vaoId;
 		};
 	};
-} ChunkMesh;
+};
 
-typedef enum
+enum ShaderType
 {
 	SHADER_VERT,
 	SHADER_FRAG
-} ShaderType;
+};
 
 void initRender();
 

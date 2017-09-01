@@ -3,7 +3,7 @@
 
 #include "thirdparty/j_threedee.h"
 
-typedef struct
+struct Movement
 {
 	float topSpeed, accelFactor;
 
@@ -14,19 +14,19 @@ typedef struct
 
 	union { JVec3 velocity; JVec3 vel; };
 	union { JVec3 position; JVec3 pos; };
-} Movement;
+};
 
-typedef struct
+struct Controls
 {
 	bool forward, backward, left, right, up, down;
 	float screenDeltaX, screenDeltaY;
-} Controls;
+};
 
-typedef struct
+struct SimState
 {
 	Controls controls;
 	Movement movement;
-} SimState;
+};
 
 #endif // _VOX_MAIN_C_
 

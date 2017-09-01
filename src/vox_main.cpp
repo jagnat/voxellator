@@ -6,8 +6,8 @@
 #include "vox_mesher.h"
 
 #define _USE_MATH_DEFINES
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdio>
 
 #define J_THREEDEE_IMPLEMENTATION
 #include "thirdparty/j_threedee.h"
@@ -174,8 +174,8 @@ void handleEvents()
 	}
 }
 
-#include "vox_render.c"
-#include "vox_noise.c"
-#include "vox_mesher.c"
-#include "vox_world.c"
+#include "vox_render.cpp"
+#include "vox_noise.cpp"
+#include "vox_mesher.cpp"
+#include "vox_world.cpp"
 
