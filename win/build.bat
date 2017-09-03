@@ -2,7 +2,7 @@
 cd %~dp0
 xcopy "../src/shaders" "shaders" /i /y > nul
 set output=vox.exe
-set cflags=/nologo /MT /Zi
+set cflags=/nologo /MT /Zi /EHsc
 set libs=LIBCMT.lib User32.lib Gdi32.lib OpenGL32.lib
 set lflags=/OUT:%output% /SUBSYSTEM:CONSOLE /INCREMENTAL:NO
 
