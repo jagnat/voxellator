@@ -58,7 +58,8 @@ int CALLBACK WinMain(
 
 	// TODO: move to init
 	win32_platform->running = true;
-	win32_platform->targetDelta = 1000.L / 60.L;
+	win32_platform->updateTarget = 1000.L / 120.L;
+	win32_platform->renderTarget = 1000.L / 60.L;
 
 	WNDCLASSEX *wc = &win32->windowClass;
 	wc->cbSize = sizeof(WNDCLASSEX);
@@ -124,8 +125,8 @@ int CALLBACK WinMain(
 
 	init(win32_platform);
 
-	double prevTime, currentTime, elapsedTime, accumTime;
-	elapsedTime = accumTime = 0;
+	double prevTime, currentTime, elapsedTime, updateDelta, renderDelta;
+	elapsedTime = updateDelta = renderDelta = 0;
 
 	prevTime = win32_elapsedMs();
 
@@ -148,17 +149,25 @@ int CALLBACK WinMain(
 
 		prevTime = currentTime;
 
-		accumTime += elapsedTime;
+		updateDelta += elapsedTime;
+		renderDelta += elapsedTime;
 
-		if (accumTime >= win32_platform->targetDelta)
+		while (updateDelta >= win32_platform->updateTarget)
 		{
-			tick(accumTime);
-			SwapBuffers(win32->deviceContext);
+			update();
 
 			// Reset event queue
 			win32_platform->filledEvents = 0;
 
-			accumTime = 0;
+			updateDelta -= win32_platform->updateTarget;
+		}
+		
+		// Don't catch up lost render frames, just render last one
+		if (renderDelta >= win32_platform->renderTarget)
+		{
+			render(updateDelta / win32_platform->updateTarget);
+			SwapBuffers(win32->deviceContext);
+			renderDelta = 0;
 		}
 
 		Sleep(1);

@@ -47,7 +47,7 @@ void handleEvents();
 
 void buildMovementFromControls();
 
-void tick(double delta)
+void update()
 {
 	handleEvents();
 	buildMovementFromControls();
@@ -55,6 +55,11 @@ void tick(double delta)
 	setCam(sim->movement);
 	for (int i = 0; i < 3; i++)
 		renderChunkMesh(meshes[i]);
+}
+
+void render(double updateInterval)
+{
+
 }
 
 void buildMovementFromControls()

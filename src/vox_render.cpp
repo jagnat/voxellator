@@ -59,7 +59,7 @@ typedef struct
 } RenderState;
 
 RenderState ___rs = {0};
-RenderState *render;
+RenderState *renderer;
 
 uint createGlProgram(char *vertex, char *fragment);
 uint loadGlShader(const char *filedata, ShaderType shaderType);
@@ -78,7 +78,7 @@ void initRender()
 	GL_LIST
 	#undef GLDEF
 
-	render = &___rs;
+	renderer = &___rs;
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 	glDepthFunc(GL_LEQUAL);
@@ -109,32 +109,32 @@ void initRender()
 	fread(fragmentFile, 1, filesize, shaderfile);
 	fclose(shaderfile);
 
-	render->programId = createGlProgram(vertexFile, fragmentFile);
+	renderer->programId = createGlProgram(vertexFile, fragmentFile);
 	free(vertexFile);
 	free(fragmentFile);
-	glUseProgram(render->programId);
+	glUseProgram(renderer->programId);
 
-	render->viewLoc = glGetUniformLocation(render->programId, "viewMatrix");
-	render->projLoc = glGetUniformLocation(render->programId, "projMatrix");
-	render->modelLoc = glGetUniformLocation(render->programId, "modelMatrix");
+	renderer->viewLoc = glGetUniformLocation(renderer->programId, "viewMatrix");
+	renderer->projLoc = glGetUniformLocation(renderer->programId, "projMatrix");
+	renderer->modelLoc = glGetUniformLocation(renderer->programId, "modelMatrix");
 
-	if (render->viewLoc == -1 || render->projLoc == -1 || render->modelLoc == -1)
+	if (renderer->viewLoc == -1 || renderer->projLoc == -1 || renderer->modelLoc == -1)
 		printf("failed to grabu niform locations!\n");
 	
-	render->viewMatrix = JMat4_Identity();
-	render->projMatrix = JMat4_PerspectiveFOV((70.0f * 3.14159f) / 180.0f,
+	renderer->viewMatrix = JMat4_Identity();
+	renderer->projMatrix = JMat4_PerspectiveFOV((70.0f * 3.14159f) / 180.0f,
 		1280/720.0f, 0.001f, 10000.f);
 
 	int NUM_IND = 50331648;
-	render->quadIndices = (uint*)malloc(sizeof(uint) * NUM_IND);
+	renderer->quadIndices = (uint*)malloc(sizeof(uint) * NUM_IND);
 	for (int i = 0; i < NUM_IND / 6; i++)
 	{
-		render->quadIndices[i * 6 + 0] = i * 4 + 0;
-		render->quadIndices[i * 6 + 1] = i * 4 + 2;
-		render->quadIndices[i * 6 + 2] = i * 4 + 1;
-		render->quadIndices[i * 6 + 3] = i * 4 + 0;
-		render->quadIndices[i * 6 + 4] = i * 4 + 3;
-		render->quadIndices[i * 6 + 5] = i * 4 + 2;
+		renderer->quadIndices[i * 6 + 0] = i * 4 + 0;
+		renderer->quadIndices[i * 6 + 1] = i * 4 + 2;
+		renderer->quadIndices[i * 6 + 2] = i * 4 + 1;
+		renderer->quadIndices[i * 6 + 3] = i * 4 + 0;
+		renderer->quadIndices[i * 6 + 4] = i * 4 + 3;
+		renderer->quadIndices[i * 6 + 5] = i * 4 + 2;
 	}
 }
 
@@ -187,7 +187,7 @@ void uploadChunkMesh(ChunkMesh *mesh)
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->iboId);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
 			mesh->numIndices * sizeof(uint),
-			mesh->indexMode == INDEX_QUADS ? render->quadIndices : mesh->indices,
+			mesh->indexMode == INDEX_QUADS ? renderer->quadIndices : mesh->indices,
 			GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
@@ -196,7 +196,7 @@ void uploadChunkMesh(ChunkMesh *mesh)
 // TODO: Add local transform uniform update
 void renderChunkMesh(ChunkMesh *mesh)
 {
-	glUniformMatrix4fv(render->modelLoc, 1, false, mesh->modelMatrix.flat);
+	glUniformMatrix4fv(renderer->modelLoc, 1, false, mesh->modelMatrix.flat);
 
 	glBindVertexArray(mesh->vaoId);
 	switch(mesh->indexMode)
@@ -215,12 +215,12 @@ void renderChunkMesh(ChunkMesh *mesh)
 
 void setCam(Movement mov)
 {
-	glUseProgram(render->programId);
+	glUseProgram(renderer->programId);
 	glClearColor(.01f, .01f, .01f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	render->viewMatrix = JMat4_FPSCam(mov.pos, mov.yaw, mov.pitch);
-	glUniformMatrix4fv(render->projLoc, 1, false, render->projMatrix.flat);
-	glUniformMatrix4fv(render->viewLoc, 1, false, render->viewMatrix.flat);
+	renderer->viewMatrix = JMat4_FPSCam(mov.pos, mov.yaw, mov.pitch);
+	glUniformMatrix4fv(renderer->projLoc, 1, false, renderer->projMatrix.flat);
+	glUniformMatrix4fv(renderer->viewLoc, 1, false, renderer->viewMatrix.flat);
 }
 
 uint createGlProgram(char *vertex, char *fragment)

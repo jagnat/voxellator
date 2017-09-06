@@ -83,7 +83,7 @@ struct Config
 struct PlatformState
 {
 	bool running;
-	double targetDelta;
+	double updateTarget, renderTarget;
 
 	#define EVENT_QUEUE_SIZE 64
 	Event eventQueue[EVENT_QUEUE_SIZE];
@@ -96,7 +96,8 @@ struct PlatformState
 };
 
 // Functions the platform calls
-void tick(double delta);
+void update();
+void render(double updateInterval);
 void init(PlatformState *plat);
 
 // Functions the platform must implement
