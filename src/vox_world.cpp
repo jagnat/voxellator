@@ -14,7 +14,8 @@ void allocateChunkData(Chunk *chunk)
 	if (chunk->data)
 		return;
 	// TODO: error checking
-	chunk->data = (uint8*)calloc(1, sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE);
+	int realSize = CHUNK_SIZE + 2;
+	chunk->data = (uint8*)calloc(1, sizeof(uint8) * realSize * realSize * realSize);
 	chunk->empty = false;
 }
 
@@ -23,9 +24,18 @@ void freeChunk(Chunk *chunk)
 	if (!chunk)
 		return;
 	if (!chunk->empty)
+	{
 		free(chunk->data);
+		chunk->data = (uint8*)0;
+	}
 	free(chunk);
 }
+
+inline int chunk__3Dto1D(int x, int y, int z)
+{ return (x + 1) + (z + 1) * CHUNK_SIZE + (y + 1) * CHUNK_SIZE * CHUNK_SIZE; }
+
+inline bool chunk__inChunk(int x, int y, int z)
+{ return x >= 0 && x < CHUNK_SIZE && y >= 0 && y < CHUNK_SIZE && z >= 0 && z < CHUNK_SIZE; }
 
 void setChunkCoords(Chunk *chunk, int x, int y, int z)
 { chunk->x = x; chunk->y = y; chunk->z = z; }
@@ -39,40 +49,53 @@ Chunk* createPerlinChunk(int xc, int yc, int zc)
 
 	seedPerlin3(429579272525743);
 	xc *= CHUNK_SIZE; yc *= CHUNK_SIZE; zc *= CHUNK_SIZE;
-	for (int x = 0; x < CHUNK_SIZE; x++)
-		for (int y = 0; y < CHUNK_SIZE; y++)
-			for (int z = 0; z < CHUNK_SIZE; z++)
+	for (int x = -1; x < CHUNK_SIZE + 1; x++)
+		for (int z = -1; z < CHUNK_SIZE + 1; z++)
+			for (int y = -1; y < CHUNK_SIZE + 1; y++)
 			{
+#if 0
 				float p = perlin3((xc + x) / 30.0, (yc + y) / 30.0, (zc + z) / 30.0);
 				if (p > 0)
 				{
 					chunk_setBlockUnchecked(c, 255, x, y, z);
-					c->filledVoxels++;
+					if (chunk__inChunk(x, y, z))
+						c->filledVoxels++;
 				}
+#else
+				float p = perlin3((xc + x) / 30.0, 298.3219f, (zc + z) / 30.0);
+				p = (p + 1) / 2;
+				if ((double)((yc + y) / 60.0f) < p)
+				{
+					chunk_setBlockUnchecked(c, 255, x, y, z);
+					if (chunk__inChunk(x, y, z))
+						c->filledVoxels++;
+				}
+
+#endif
 			}
 	
 	return c;
 }
 
+
 uint8 chunk_getBlockUnchecked(Chunk *chunk, int x, int y, int z)
-{ return chunk->data[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE]; }
+{ return chunk->data[chunk__3Dto1D(x, y, z)]; }
 
 
 uint8 chunk_getBlockChecked(Chunk *chunk, int x, int y, int z)
 {
-	if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE)
+	if (x < -1 || x > CHUNK_SIZE + 1 || y < -1 || y > CHUNK_SIZE + 1 || z < -1 || z > CHUNK_SIZE + 1)
 		return 0;
-	else
-		return chunk->data[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE];
+	return chunk->data[chunk__3Dto1D(x, y, z)];
 }
 
 void chunk_setBlockUnchecked(Chunk *chunk, uint8 val, int x, int y, int z)
-{ chunk->data[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] = val; }
+{ chunk->data[chunk__3Dto1D(x, y, z)] = val; }
 
 void chunk_setBlockChecked(Chunk *chunk, uint8 val, int x, int y, int z)
 {
-	if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE)
+	if (x < -1 || x > CHUNK_SIZE + 1 || y < -1 || y > CHUNK_SIZE + 1 || z < -1 || z > CHUNK_SIZE + 1)
 		return;
-	chunk->data[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] = val;
+	chunk->data[chunk__3Dto1D(x, y, z)] = val;
 }
 

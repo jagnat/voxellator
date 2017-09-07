@@ -16,8 +16,10 @@
 PlatformState *platform;
 SimState *sim;
 
-ChunkMesh *meshes[3];
-Chunk *chunks[3];
+const int chunkSize = 3;
+const int numChunks = chunkSize * chunkSize * chunkSize;
+ChunkMesh *meshes[numChunks];
+Chunk *chunks[numChunks];
 
 void init(PlatformState *plat)
 {
@@ -30,17 +32,21 @@ void init(PlatformState *plat)
 	sim->movement.pitch = -M_PI / 5;
 	initRender();
 
-	for (int i = 0; i < 3; i++)
+	for (int x = 0; x < chunkSize; x++)
+		for (int z = 0; z < chunkSize; z++)
+			for (int y = 0; y < chunkSize; y++)
+			{
+				chunks[x * chunkSize * chunkSize + z * chunkSize + y] = createPerlinChunk(x, y, z);
+				meshes[x * chunkSize * chunkSize + z * chunkSize + y] = createChunkMesh(10000000);
+			}
+	
+	for (int i = 0; i < numChunks; i++)
 	{
-		chunks[i] = createPerlinChunk(0, 0, 0);
-		chunks[i]->z = i;
-		meshes[i] = createChunkMesh(20000000);
-	}
-	meshVanillaNaive(chunks[0], meshes[0]);
-	meshVanillaCull(chunks[1], meshes[1]);
-	meshVanillaGreedy(chunks[2], meshes[2]);
-	for (int i = 0; i < 3; i++)
+		Color c = {50, (uint8)(50 + (205 * i) / numChunks), 50};
+		chunks[i]->color = c;
+		meshVanillaGreedy(chunks[i], meshes[i]);
 		uploadChunkMesh(meshes[i]);
+	}
 }
 
 void handleEvents();
@@ -53,7 +59,7 @@ void update()
 	buildMovementFromControls();
 
 	setCam(sim->movement);
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < numChunks; i++)
 		renderChunkMesh(meshes[i]);
 }
 
@@ -79,7 +85,7 @@ void buildMovementFromControls()
 	
 	mov->yaw = fmod(mov->yaw - yawDelta, 2 * M_PI);
 
-	const float MV_DELTA = 0.5;
+	const float MV_DELTA = 0.2;
 	if (con->forward)
 	{
 		mov->pos.z -= MV_DELTA * cos(mov->yaw);

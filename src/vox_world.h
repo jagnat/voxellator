@@ -4,22 +4,34 @@
 
 #include "vox_platform.h"
 
-#define CHUNK_SIZE 32
+#define CHUNK_SIZE 64
 
-typedef struct
+struct Chunk
 {
 	bool empty;
 	int filledVoxels;
 	uint8 *data;
 	int x, y, z;
-} Chunk;
+	Color color;
+};
 
-typedef struct
+struct ChunkSet
 {
 	int currentX, currentY, currentZ;
 	Chunk** loaded;
 	Chunk** free;
-} ChunkSet;
+};
+
+struct GenContext
+{
+	uint64 seed;
+};
+
+struct World
+{
+	GenContext gen;
+	ChunkSet set;
+};
 
 Chunk* createEmptyChunk();
 void allocateChunkData(Chunk *chunk);

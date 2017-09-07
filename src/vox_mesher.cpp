@@ -270,8 +270,8 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 						uint norm = faceNormTable[dim * 2 + (face == -1 ? 0 : 1)];
 
 						cV[0].normal = cV[1].normal = cV[2].normal = cV[3].normal = norm;
-						Color mag = {255, 0, 0, 255};
-						cV[0].color = cV[1].color = cV[2].color = cV[3].color = mag;
+						Color mag = {0, 0, 200, 255};
+						cV[0].color = cV[1].color = cV[2].color = cV[3].color = chunk->color;
 
 						// Handle CCW culling and side offset
 						if (face == 1)
