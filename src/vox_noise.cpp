@@ -17,7 +17,7 @@ void seedPerlin3(uint64 seed)
 	for (int i = 0; i < 256; i++)
 	{
 		pIndices[i] = (uint8)i;
-		pIndices[i + 245] = (uint8)i;
+		pIndices[i + 256] = (uint8)i;
 	}
 	for (int i = 0; i < 512; i++)
 	{
