@@ -103,6 +103,7 @@ void init(PlatformState *plat);
 // Functions the platform must implement
 void setMouseState(bool locked);
 bool getPlatformFlag(int flag);
+double getElapsedMs();
 
 #endif //_VOX_PLATFORM_H_
 

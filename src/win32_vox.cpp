@@ -40,7 +40,6 @@ LRESULT CALLBACK win32_windowProc(
 	UINT message,
 	WPARAM wParam, LPARAM lParam);
 int win32_createGLContext();
-double win32_elapsedMs();
 void win32_handleEvents();
 void win32_centerCursor();
 void win32_setPlatformFlag(int flag, bool state);
@@ -128,7 +127,7 @@ int CALLBACK WinMain(
 	double prevTime, currentTime, elapsedTime, updateDelta, renderDelta;
 	elapsedTime = updateDelta = renderDelta = 0;
 
-	prevTime = win32_elapsedMs();
+	prevTime = getElapsedMs();
 
 	while (win32_platform->running)
 	{
@@ -137,7 +136,7 @@ int CALLBACK WinMain(
 		if (getPlatformFlag(MOUSE_LOCKED))
 			win32_centerCursor();
 
-		currentTime = win32_elapsedMs();
+		currentTime = getElapsedMs();
 
 		elapsedTime = currentTime - prevTime;
 
@@ -483,7 +482,7 @@ int win32_createGLContext()
 	return 0;
 }
 
-double win32_elapsedMs()
+double getElapsedMs()
 {
 	LARGE_INTEGER res;
 	QueryPerformanceCounter(&res);
