@@ -80,6 +80,11 @@ struct Config
 	float mouseSensitivity;
 };
 
+struct PlatformInfo
+{
+	int physicalCores;
+};
+
 struct PlatformState
 {
 	bool running;
@@ -104,6 +109,7 @@ void init(PlatformState *plat);
 void setMouseState(bool locked);
 bool getPlatformFlag(int flag);
 double getElapsedMs();
+bool createThread(int (*threadProc)(void), void *threadData);
 
 #endif //_VOX_PLATFORM_H_
 

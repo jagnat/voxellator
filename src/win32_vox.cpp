@@ -450,7 +450,9 @@ int win32_createGLContext()
 	HGLRC tempRC = wglCreateContext(dc);
 	wglMakeCurrent(dc, tempRC);
 
-	typedef HGLRC (WINAPI *ContextLoaderFunc) (HDC hdc, HGLRC sharecontext, const int *attriblist);
+	typedef HGLRC (WINAPI *ContextLoaderFunc)
+		(HDC hdc, HGLRC sharecontext, const int *attriblist);
+	
 	ContextLoaderFunc _wglCreateContextAttribsARB =
 		(ContextLoaderFunc)wglGetProcAddress("wglCreateContextAttribsARB");
 	if (!_wglCreateContextAttribsARB)
@@ -480,6 +482,26 @@ int win32_createGLContext()
 	wglDeleteContext(tempRC);
 
 	return 0;
+}
+
+struct ThreadContext
+{
+	int (*threadProc)(void);
+	void *threadData;
+	int result;
+};
+
+DWORD win32_threadProc(void *threadStruct)
+{
+	ThreadContext *context = (ThreadContext*)threadStruct;
+	int result = context->threadProc(context->threadData);
+	if (result < 0)
+	return 0;
+}
+
+bool createThread(void (*threadProc)(void), void *threadData)
+{
+	return true;
 }
 
 double getElapsedMs()
