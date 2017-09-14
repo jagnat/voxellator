@@ -16,7 +16,7 @@
 PlatformState *platform;
 SimState *sim;
 
-const int chunkSize = 3;
+const int chunkSize = 4;
 const int numChunks = chunkSize * chunkSize * chunkSize;
 ChunkMesh *meshes[numChunks];
 Chunk *chunks[numChunks];
@@ -42,7 +42,8 @@ void init(PlatformState *plat)
 	
 	for (int i = 0; i < numChunks; i++)
 	{
-		Color c = {50, (uint8)(50 + (205 * i) / numChunks), 50};
+		//Color c = {50, (uint8)(50 + (205 * i) / numChunks), 50};
+		Color c = {50, 100, 50};
 		chunks[i]->color = c;
 		meshVanillaGreedy(chunks[i], meshes[i]);
 		uploadChunkMesh(meshes[i]);

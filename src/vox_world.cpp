@@ -32,7 +32,7 @@ void freeChunk(Chunk *chunk)
 }
 
 inline int chunk__3Dto1D(int x, int y, int z)
-{ return (x + 1) + (z + 1) * (CHUNK_SIZE + 2) + (y + 1) * (CHUNK_SIZE + 2) * (CHUNK_SIZE + 2); }
+{ return (x + 1) + (CHUNK_SIZE + 2) * ((z + 1) + (y + 1) * (CHUNK_SIZE + 2)); }
 
 inline bool chunk__inChunk(int x, int y, int z)
 { return x >= 0 && x < CHUNK_SIZE && y >= 0 && y < CHUNK_SIZE && z >= 0 && z < CHUNK_SIZE; }
@@ -53,7 +53,7 @@ Chunk* createPerlinChunk(int xc, int yc, int zc)
 		for (int z = -1; z < CHUNK_SIZE + 1; z++)
 			for (int y = -1; y < CHUNK_SIZE + 1; y++)
 			{
-#if 0
+#if 1
 				float p = perlin3((xc + x) / 30.0, (yc + y) / 30.0, (zc + z) / 30.0);
 				if (p > 0)
 				{
@@ -64,7 +64,7 @@ Chunk* createPerlinChunk(int xc, int yc, int zc)
 #else
 				float p = perlin3((xc + x) / 30.0, 298.3219f, (zc + z) / 30.0);
 				p = (p + 1) / 2;
-				if ((double)((yc + y) / 190.0f) < p)
+				if ((double)((yc + y) / 120.0f) < p)
 				{
 					chunk_setBlockUnchecked(c, 255, x, y, z);
 					if (chunk__inChunk(x, y, z))

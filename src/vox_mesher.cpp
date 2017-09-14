@@ -66,14 +66,17 @@ void addVertex(MeshBuildContext *context)
 
 void addFace(int face, MeshBuildContext *context)
 {
-	for (int i = 0; i < 4; i++)
+	uint norm = faceNormTable[face];
+	Color c = context->color;
+	int faceOffs = face * 12;
+	for (int i = 0; i < 12; i += 3)
 	{
 		VertexColorNormal10 *v = context->current;
-		v->color = context->color;
-		v->normal = faceNormTable[face];
-		v->x = context->x + facePosTable[face * 12 + i * 3 + 0];
-		v->y = context->y + facePosTable[face * 12 + i * 3 + 1];
-		v->z = context->z + facePosTable[face * 12 + i * 3 + 2];
+		v->color = c;
+		v->normal = norm;
+		v->x = context->x + facePosTable[faceOffs + i + 0];
+		v->y = context->y + facePosTable[faceOffs + i + 1];
+		v->z = context->z + facePosTable[faceOffs + i + 2];
 		v->w = 1;
 		context->current++;
 	}
@@ -101,6 +104,7 @@ void setModelMatrix(Chunk *chunk, ChunkMesh *mesh)
 
 void meshVanillaNaive(Chunk *chunk, ChunkMesh *mesh)
 {
+	double startTime = getElapsedMs();
 	setModelMatrix(chunk, mesh);
 
 	mesh->indexMode = INDEX_QUADS;
@@ -110,73 +114,71 @@ void meshVanillaNaive(Chunk *chunk, ChunkMesh *mesh)
 	MeshBuildContext context = {0};
 	context.current = mesh->vertices;
 
-	context.color.g=context.color.a=255;
+	context.color = chunk->color;
 
-	for (int x = 0; x < CHUNK_SIZE; x++)
-		for (int y = 0; y < CHUNK_SIZE; y++)
-			for (int z = 0; z < CHUNK_SIZE; z++)
+	for (int y = 0; y < CHUNK_SIZE; y++)
+		for (int z = 0; z < CHUNK_SIZE; z++)
+			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
 				context.x = x; context.y = y; context.z = z;
 				if (chunk_getBlockUnchecked(chunk, x, y, z))
 					addCube(&context);
 			}
+	
+	double elapsedTime = getElapsedMs() - startTime;
+	printf("Naive: Chunk %d,%d,%d took %0.4f ms\n", chunk->x, chunk->y, chunk->z, elapsedTime);
 }
 
 void meshVanillaCull(Chunk *chunk, ChunkMesh *mesh)
 {
+	double startTime = getElapsedMs();
 	setModelMatrix(chunk, mesh);
 
 	mesh->indexMode = INDEX_QUADS;
 
 	MeshBuildContext context = {0};
 	context.current = mesh->vertices;
-	context.color.b=context.color.a=255;
+	context.color = chunk->color;
 
-	for (int x = 0; x < CHUNK_SIZE; x++)
-		for (int y = 0; y < CHUNK_SIZE; y++)
-			for (int z = 0; z < CHUNK_SIZE; z++)
+	for (int y = 0; y < CHUNK_SIZE; y++)
+		for (int z = 0; z < CHUNK_SIZE; z++)
+			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
 				// TODO: Unroll, use unchecked lookups for extra speed
 				context.x = x; context.y = y; context.z = z;
 				if (chunk_getBlockUnchecked(chunk, x, y, z))
 				{
-					if (!chunk_getBlockChecked(chunk, x - 1, y, z))
+					if (!chunk_getBlockUnchecked(chunk, x - 1, y, z))
 						addFace(0, &context);
-					if (!chunk_getBlockChecked(chunk, x + 1, y, z))
+					if (!chunk_getBlockUnchecked(chunk, x + 1, y, z))
 						addFace(1, &context);
-					if (!chunk_getBlockChecked(chunk, x, y - 1, z))
+					if (!chunk_getBlockUnchecked(chunk, x, y - 1, z))
 						addFace(2, &context);
-					if (!chunk_getBlockChecked(chunk, x, y + 1, z))
+					if (!chunk_getBlockUnchecked(chunk, x, y + 1, z))
 						addFace(3, &context);
-					if (!chunk_getBlockChecked(chunk, x, y, z - 1))
+					if (!chunk_getBlockUnchecked(chunk, x, y, z - 1))
 						addFace(4, &context);
-					if (!chunk_getBlockChecked(chunk, x, y, z + 1))
+					if (!chunk_getBlockUnchecked(chunk, x, y, z + 1))
 						addFace(5, &context);
 				}
 			}
 
 	mesh->usedVertices = context.numFaces * 4;
 	mesh->numIndices = context.numFaces * 6;
+
+	double elapsedTime = getElapsedMs() - startTime;
+	printf("Culled: Chunk %d,%d,%d took %0.4f ms\n", chunk->x, chunk->y, chunk->z, elapsedTime);
 }
 
 bool greedy_getMaskJK(uint8 *mask, int j, int k) { return mask[j * CHUNK_SIZE + k]; }
 void greedy_setMaskJK(uint8 *mask, int j, int k) { mask[j * CHUNK_SIZE + k] = 1; }
 
-uint8 greedy_getC(Chunk *chunk, int dim, int i, int j, int k)
+uint8 greedy_getU(Chunk *chunk, int dim1, int dim2, int dim3, int i, int j, int k)
 {
 	int p[3];
-	p[dim] = i;
-	p[(dim + 1) % 3] = j;
-	p[(dim + 2) % 3] = k;
-	return chunk_getBlockChecked(chunk, p[0], p[1], p[2]);
-}
-
-uint8 greedy_getU(Chunk *chunk, int dim, int i, int j, int k)
-{
-	int p[3];
-	p[dim] = i;
-	p[(dim + 1) % 3] = j;
-	p[(dim + 2) % 3] = k;
+	p[dim1] = i;
+	p[dim2] = j;
+	p[dim3] = k;
 	return chunk_getBlockUnchecked(chunk, p[0], p[1], p[2]);
 }
 
@@ -190,6 +192,10 @@ void greedy_setV(VertexColorNormal10 *vert, int dim, int16 i, int16 j, int16 k)
 
 void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 {
+#define GREEDY_PRINT_TIME
+#ifdef GREEDY_PRINT_TIME
+	double startTime = getElapsedMs();
+#endif
 	setModelMatrix(chunk, mesh);
 	mesh->indexMode = INDEX_QUADS;
 
@@ -207,6 +213,8 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 
 	for (int dim = 0; dim < 3; dim++) // Iterate through three dimensions
 	{
+		int dim2 = (dim + 1) % 3, dim3 = (dim + 2) % 3;
+
 		for (int face = -1; face < 2; face += 2) // Iterate through each dimension twice, for each face
 		{
 			for (int i = 0; i < CHUNK_SIZE; i++) // Dimension we are currently building faces for
@@ -215,8 +223,8 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 				for (int j = 0; j < CHUNK_SIZE; j++) // Iterate through the rect of the current face
 				for (int k = 0; k < CHUNK_SIZE; k++)
 				{
-					if (greedy_getU(chunk, dim, i, j, k) &&
-						!greedy_getC(chunk, dim, i + face, j, k) &&
+					if (greedy_getU(chunk, dim, dim2, dim3, i, j, k) &&
+						!greedy_getU(chunk, dim, dim2, dim3, i + face, j, k) &&
 						!greedy_getMaskJK(mask, j, k))
 					{
 						int a = 1, b = 1; // Height/width of greedy rect
@@ -224,8 +232,8 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 
 						// Expand horizontally
 						while (j + a < CHUNK_SIZE &&
-							greedy_getU(chunk, dim, i, j + a, k) &&
-							!greedy_getC(chunk, dim, i + face, j + a, k) &&
+							greedy_getU(chunk, dim, dim2, dim3, i, j + a, k) &&
+							!greedy_getU(chunk, dim, dim2, dim3, i + face, j + a, k) &&
 							!greedy_getMaskJK(mask, j + a, k))
 						{
 							greedy_setMaskJK(mask, j + a, k);
@@ -237,8 +245,8 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 						{
 							bool rowInvalid = false;
 							for (int p = 0; p < a; p++)
-								if (!greedy_getU(chunk, dim, i, j + p, k + b) ||
-									greedy_getC(chunk, dim, i + face, j + p, k + b) ||
+								if (!greedy_getU(chunk, dim, dim2, dim3, i, j + p, k + b) ||
+									greedy_getU(chunk, dim, dim2, dim3, i + face, j + p, k + b) ||
 									greedy_getMaskJK(mask, j + p, k + b))
 								{
 									rowInvalid = true;
@@ -299,5 +307,10 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 	free(vert);
 	mesh->usedVertices = vertLen;
 	mesh->numIndices = (vertLen / 4) * 6;
+
+#ifdef GREEDY_PRINT_TIME
+	double elapsedTime = getElapsedMs() - startTime;
+	printf("Greedy: Chunk %d,%d,%d took %0.4f ms to mesh\n", chunk->x, chunk->y, chunk->z, elapsedTime);
+#endif
 }
 
