@@ -87,6 +87,9 @@ void initRender()
 	glFrontFace(GL_CCW);
 	glCullFace(GL_BACK);
 
+	// TODO: Add a setting for wireframe with this
+	//glPolygonMode(GL_FRONT, GL_LINE);
+
 	// TODO: Don't use stdio for file io, make this part of platform
 	// TODO: Hotloading
 	FILE *shaderfile = fopen("shaders/vertex.glsl", "r");
