@@ -1,6 +1,7 @@
 #include "vox_platform.h"
 
 #include <windows.h>
+#include <process.h>
 #undef near
 #undef far
 #include <GL/gl.h>
@@ -59,6 +60,10 @@ int CALLBACK WinMain(
 	win32_platform->running = true;
 	win32_platform->updateTarget = 1000.L / 120.L;
 	win32_platform->renderTarget = 1000.L / 60.L;
+
+	SYSTEM_INFO info;
+	GetSystemInfo(&info);
+	win32_platform->info.logicalCores = info.dwNumberOfProcessors;
 
 	WNDCLASSEX *wc = &win32->windowClass;
 	wc->cbSize = sizeof(WNDCLASSEX);
@@ -484,24 +489,23 @@ int win32_createGLContext()
 	return 0;
 }
 
-struct ThreadContext
+bool createThread(void (*threadProc)(void*), void *threadArgs)
 {
-	int (*threadProc)(void);
-	void *threadData;
-	int result;
-};
+	uint64 res = _beginthread(threadProc, 0, threadArgs);
 
-DWORD win32_threadProc(void *threadStruct)
-{
-	ThreadContext *context = (ThreadContext*)threadStruct;
-	int result = context->threadProc(context->threadData);
-	if (result < 0)
-	return 0;
+	if (res == -1L)
+		return false;
+	return true;
 }
 
-bool createThread(void (*threadProc)(void), void *threadData)
+void atomicIncrement(volatile int *val)
 {
-	return true;
+	InterlockedIncrement((LONG*)val);
+}
+
+void atomicDecrement(volatile int *val)
+{
+	InterlockedDecrement((LONG*)val);
 }
 
 double getElapsedMs()

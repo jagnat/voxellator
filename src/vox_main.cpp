@@ -30,6 +30,7 @@ void init(PlatformState *plat)
 	sim->movement.pos.y = 80;
 	sim->movement.yaw = M_PI + M_PI / 4;
 	sim->movement.pitch = -M_PI / 5;
+
 	initRender();
 
 	for (int x = 0; x < chunkSize; x++)
@@ -49,6 +50,66 @@ void init(PlatformState *plat)
 		uploadChunkMesh(meshes[i]);
 	}
 }
+
+/// {
+void initThreadManager()
+{
+	ThreadManager *tm = &sim->threading;
+	tm->maxThreads = platform->info.logicalCores - 1;
+	tm->activeJobs = (ThreadJob*)calloc(tm->maxThreads, sizeof(ThreadJob));
+	tm->freeJobList = tm->activeJobs;
+	for (int i = 0; i < tm->maxThreads - 1; i++)
+	{
+		tm->activeJobs[i].next = &tm->activeJobs[i + 1];
+	}
+}
+
+void startJob(void *arg)
+{
+	atomicIncrement(&sim->threading.jobsActive);
+	ThreadJob *job = (ThreadJob*)arg;
+	job->jobProc(job->args);
+	atomicIncrement(&job->done);
+	atomicDecrement(&sim->threading.jobsActive);
+}
+
+bool addJob(ThreadJob job)
+{
+	if (sim->threading.jobsQueued >= JOB_QUEUE_LEN)
+		return false;
+	
+	sim->threading.jobQueue[sim->threading.jobsQueued++] = job;
+	return true;
+}
+
+void processJobs()
+{
+	ThreadManager *tm = &sim->threading;
+
+	// Call completionProc on finished threads and delete
+	for (int i = 0; i < tm->maxThreads; i++)
+	{
+		if (tm->activeJobs[i].done)
+		{
+			tm->activeJobs[i].completionProc(tm->activeJobs[i].args);
+			memset((void*)(tm->activeJobs + i), 0, sizeof(ThreadJob));
+		}
+	}
+
+	int availableThreads = tm->maxThreads - tm->jobsActive;
+	if (availableThreads <= 0)
+		return;
+	
+	tm->jobsQueued -= availableThreads;
+	
+	// Spawn new threads if we have room
+	for (int i = 0; i < availableThreads; i++)
+	{
+		// create thread
+		createThread(startJob, &tm->jobQueue[i]);
+	}
+}
+/// }
 
 void handleEvents();
 

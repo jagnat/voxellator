@@ -82,7 +82,7 @@ struct Config
 
 struct PlatformInfo
 {
-	int physicalCores;
+	int logicalCores;
 };
 
 struct PlatformState
@@ -90,6 +90,7 @@ struct PlatformState
 	bool running;
 	double updateTarget, renderTarget;
 
+	// TODO: This is trash
 	#define EVENT_QUEUE_SIZE 64
 	Event eventQueue[EVENT_QUEUE_SIZE];
 	int filledEvents;
@@ -98,6 +99,8 @@ struct PlatformState
 	int flags;
 
 	int viewportWidth, viewportHeight;
+
+	PlatformInfo info;
 };
 
 // Functions the platform calls
@@ -109,7 +112,10 @@ void init(PlatformState *plat);
 void setMouseState(bool locked);
 bool getPlatformFlag(int flag);
 double getElapsedMs();
-bool createThread(int (*threadProc)(void), void *threadData);
+
+bool createThread(void (*threadProc)(void*), void *threadData);
+void atomicIncrement(volatile int *val);
+void atomicDecrement(volatile int *val);
 
 #endif //_VOX_PLATFORM_H_
 
