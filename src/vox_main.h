@@ -44,13 +44,12 @@ struct ThreadManager
 	ThreadJob *activeJobs;
 	ThreadJob *freeJobList;
 	int jobsQueued;
-	int jobsFinished;
-	volatile int jobsActive;
+	int jobsActive;
 };
 
 void initThreadManager();
 void processJobs();
-bool addJob(ThreadJob *job);
+bool addJob(ThreadJob job);
 // ------ End thread stuff ------
 
 struct SimState

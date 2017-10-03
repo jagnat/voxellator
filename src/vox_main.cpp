@@ -16,7 +16,7 @@
 PlatformState *platform;
 SimState *sim;
 
-const int chunkSize = 4;
+const int chunkSize = 3;
 const int numChunks = chunkSize * chunkSize * chunkSize;
 ChunkMesh *meshes[numChunks];
 Chunk *chunks[numChunks];
@@ -31,7 +31,11 @@ void init(PlatformState *plat)
 	sim->movement.yaw = M_PI + M_PI / 4;
 	sim->movement.pitch = -M_PI / 5;
 
+	initThreadManager();
+
 	initRender();
+
+	finishedMeshes = (ChunkMesh**)calloc(numChunks, sizeof(ChunkMesh*));
 
 	for (int x = 0; x < chunkSize; x++)
 		for (int z = 0; z < chunkSize; z++)
@@ -46,8 +50,9 @@ void init(PlatformState *plat)
 		//Color c = {50, (uint8)(50 + (205 * i) / numChunks), 50};
 		Color c = {50, 100, 50};
 		chunks[i]->color = c;
-		meshVanillaGreedy(chunks[i], meshes[i]);
-		uploadChunkMesh(meshes[i]);
+		//meshVanillaGreedy(chunks[i], meshes[i]);
+		//uploadChunkMesh(meshes[i]);
+		addGreedyJob(chunks[i], meshes[i]);
 	}
 }
 
@@ -58,6 +63,7 @@ void initThreadManager()
 	tm->maxThreads = platform->info.logicalCores - 1;
 	tm->activeJobs = (ThreadJob*)calloc(tm->maxThreads, sizeof(ThreadJob));
 	tm->freeJobList = tm->activeJobs;
+	// Last job slot already points to null
 	for (int i = 0; i < tm->maxThreads - 1; i++)
 	{
 		tm->activeJobs[i].next = &tm->activeJobs[i + 1];
@@ -66,11 +72,9 @@ void initThreadManager()
 
 void startJob(void *arg)
 {
-	atomicIncrement(&sim->threading.jobsActive);
 	ThreadJob *job = (ThreadJob*)arg;
 	job->jobProc(job->args);
 	atomicIncrement(&job->done);
-	atomicDecrement(&sim->threading.jobsActive);
 }
 
 bool addJob(ThreadJob job)
@@ -86,13 +90,17 @@ void processJobs()
 {
 	ThreadManager *tm = &sim->threading;
 
-	// Call completionProc on finished threads and delete
 	for (int i = 0; i < tm->maxThreads; i++)
 	{
 		if (tm->activeJobs[i].done)
 		{
 			tm->activeJobs[i].completionProc(tm->activeJobs[i].args);
-			memset((void*)(tm->activeJobs + i), 0, sizeof(ThreadJob));
+
+			// Zero out and add to free list
+			memset((void*)(tm->activeJobs + i), 0, sizeof(ThreadJob)); // Might be unnecessary
+			tm->activeJobs[i].next = tm->freeJobList;
+			tm->freeJobList = tm->activeJobs + i;
+			tm->jobsActive--;
 		}
 	}
 
@@ -100,14 +108,29 @@ void processJobs()
 	if (availableThreads <= 0)
 		return;
 	
-	tm->jobsQueued -= availableThreads;
+	if (tm->jobsQueued == 0)
+		return;
+	
 	
 	// Spawn new threads if we have room
 	for (int i = 0; i < availableThreads; i++)
 	{
+		// Remove first entry from free list
+		ThreadJob *freeJob = tm->freeJobList;
+		tm->freeJobList = tm->freeJobList->next;
+		memcpy(freeJob, tm->jobQueue + i, sizeof(ThreadJob));
 		// create thread
-		createThread(startJob, &tm->jobQueue[i]);
+		printf("Creating a thread\n");
+		createThread(startJob, freeJob);
+		tm->jobsActive++;
 	}
+
+	for (int i = availableThreads; i < tm->jobsQueued; i++)
+	{
+		memcpy(tm->jobQueue + i - availableThreads, tm->jobQueue + i, sizeof(ThreadJob));
+	}
+
+	tm->jobsQueued -= availableThreads;
 }
 /// }
 
@@ -118,11 +141,13 @@ void buildMovementFromControls();
 void update()
 {
 	handleEvents();
+	processJobs();
+
 	buildMovementFromControls();
 
 	setCam(sim->movement);
-	for (int i = 0; i < numChunks; i++)
-		renderChunkMesh(meshes[i]);
+	for (int i = 0; i < numFinishedMeshes; i++)
+		renderChunkMesh(finishedMeshes[i]);
 }
 
 void render(double updateInterval)

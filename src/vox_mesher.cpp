@@ -170,6 +170,39 @@ void meshVanillaCull(Chunk *chunk, ChunkMesh *mesh)
 	printf("Culled: Chunk %d,%d,%d took %0.4f ms\n", chunk->x, chunk->y, chunk->z, elapsedTime);
 }
 
+struct MeshJobArgs
+{
+	Chunk *chunk;
+	ChunkMesh *mesh;
+};
+
+void meshVanillaGreedyJobCompletion(void *args)
+{
+	// TODO: Add to list of meshes to render this frame
+	MeshJobArgs *real = (MeshJobArgs*)args;
+	uploadChunkMesh(real->mesh);
+	finishedMeshes[numFinishedMeshes++] = real->mesh;
+	free(args);
+}
+
+void meshVanillaGreedyJobProc(void *args)
+{
+	MeshJobArgs *casted = (MeshJobArgs*)args;
+	meshVanillaGreedy(casted->chunk, casted->mesh);
+}
+
+void addGreedyJob(Chunk *chunk, ChunkMesh *mesh)
+{
+	MeshJobArgs *args = (MeshJobArgs*)malloc(sizeof(MeshJobArgs));
+	args->chunk = chunk;
+	args->mesh = mesh;
+	ThreadJob job = {0};
+	job.jobProc = meshVanillaGreedyJobProc;
+	job.completionProc = meshVanillaGreedyJobCompletion;
+	job.args = args;
+	addJob(job);
+}
+
 bool greedy_getMaskJK(uint8 *mask, int j, int k) { return mask[j * CHUNK_SIZE + k]; }
 void greedy_setMaskJK(uint8 *mask, int j, int k) { mask[j * CHUNK_SIZE + k] = 1; }
 
