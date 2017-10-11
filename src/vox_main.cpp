@@ -90,6 +90,7 @@ void processJobs()
 {
 	ThreadManager *tm = &sim->threading;
 
+	// Iterate through running threads and erase old ones
 	for (int i = 0; i < tm->maxThreads; i++)
 	{
 		if (tm->activeJobs[i].done)
@@ -107,14 +108,14 @@ void processJobs()
 	int availableThreads = tm->maxThreads - tm->jobsActive;
 	if (availableThreads <= 0)
 		return;
-	
-	if (tm->jobsQueued == 0)
-		return;
-	
+
+	int jobsSpawned = 0;
 	
 	// Spawn new threads if we have room
-	for (int i = 0; i < availableThreads; i++)
+	for (int i = 0; i < tm->jobsQueued; i++)
 	{
+		if (i >= availableThreads)
+			break;
 		// Remove first entry from free list
 		ThreadJob *freeJob = tm->freeJobList;
 		tm->freeJobList = tm->freeJobList->next;
@@ -122,15 +123,17 @@ void processJobs()
 		// create thread
 		printf("Creating a thread\n");
 		createThread(startJob, freeJob);
+		//startJob(freeJob);
 		tm->jobsActive++;
+		jobsSpawned++;
 	}
 
-	for (int i = availableThreads; i < tm->jobsQueued; i++)
+	for (int i = jobsSpawned; i < tm->jobsQueued; i++)
 	{
-		memcpy(tm->jobQueue + i - availableThreads, tm->jobQueue + i, sizeof(ThreadJob));
+		memcpy(tm->jobQueue + i - jobsSpawned, tm->jobQueue + i, sizeof(ThreadJob));
 	}
 
-	tm->jobsQueued -= availableThreads;
+	tm->jobsQueued -= jobsSpawned;
 }
 /// }
 

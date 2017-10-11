@@ -53,7 +53,7 @@ Chunk* createPerlinChunk(int xc, int yc, int zc)
 		for (int z = -1; z < CHUNK_SIZE + 1; z++)
 			for (int y = -1; y < CHUNK_SIZE + 1; y++)
 			{
-#if 1
+#if 0
 				float p = perlin3((xc + x) / 30.0, (yc + y) / 30.0, (zc + z) / 30.0);
 				if (p > 0)
 				{
