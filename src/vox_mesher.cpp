@@ -209,6 +209,8 @@ void meshVanillaGreedyJobProc(void *args)
 
 void addGreedyJob(Chunk *chunk)
 {
+	if (chunk->empty)
+		return;
 	MeshJobArgs *args = (MeshJobArgs*)malloc(sizeof(MeshJobArgs));
 	args->chunk = chunk;
 	args->mesh = createChunkMesh();
@@ -247,7 +249,7 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 #endif
 
 	// Dynamic buffer for vertices
-	int vertCap = 512, vertLen = 0;
+	int vertCap = 16, vertLen = 0;
 
 	VertexColorNormal10 *vertices = (VertexColorNormal10*)malloc(vertCap * sizeof(VertexColorNormal10));
 

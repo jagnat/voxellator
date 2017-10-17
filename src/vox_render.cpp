@@ -15,8 +15,10 @@
 GLDEF(void, UseProgram, GLuint program) \
 GLDEF(GLint, GetUniformLocation, GLuint program, const GLchar *name) \
 GLDEF(void, GenBuffers, GLsizei n, GLuint *buffers) \
+GLDEF(void, DeleteBuffers, GLsizei n, GLuint *buffers) \
 GLDEF(void, BindBuffer, GLenum target, GLuint buffer) \
 GLDEF(void, GenVertexArrays, GLsizei n, GLuint *arrays) \
+GLDEF(void, DeleteVertexArrays, GLsizei n, GLuint *arrays) \
 GLDEF(void, BufferData, GLenum target, GLsizeiptr size, const GLvoid *data, GLenum usage) \
 GLDEF(void, BindVertexArray, GLuint array) \
 GLDEF(void, EnableVertexAttribArray, GLuint index) \
@@ -171,6 +173,15 @@ ChunkMesh* createChunkMesh()
 
 void deleteChunkMesh(ChunkMesh *mesh)
 {
+	if (!mesh)
+		return;
+	
+	glDeleteBuffers(2, mesh->ids);
+	glDeleteVertexArrays(1, &mesh->vaoId);
+	
+	if (mesh->vertices)
+		free(mesh->vertices);
+	free(mesh);
 }
 
 void uploadChunkMesh(ChunkMesh *mesh)

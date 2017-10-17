@@ -63,6 +63,7 @@ void initRender();
 ChunkMesh* createChunkMesh();
 void uploadChunkMesh(ChunkMesh *mesh);
 void renderChunkMesh(ChunkMesh *mesh);
+void deleteChunkMesh(ChunkMesh *mesh);
 
 void setCam(Movement mov);
 ChunkMesh *createSampleMesh();

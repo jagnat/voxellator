@@ -16,7 +16,7 @@
 PlatformState *platform;
 SimState *sim;
 
-const int chunkSize = 3;
+const int chunkSize = 6;
 const int numChunks = chunkSize * chunkSize * chunkSize;
 Chunk *chunks[numChunks];
 
@@ -45,11 +45,9 @@ void init(PlatformState *plat)
 	
 	for (int i = 0; i < numChunks; i++)
 	{
-		//Color c = {50, (uint8)(50 + (205 * i) / numChunks), 50};
+		//Color c = {50, (uint8)(100 + rand() % 50), 50};
 		Color c = {50, 100, 50};
 		chunks[i]->color = c;
-		//meshVanillaGreedy(chunks[i], meshes[i]);
-		//uploadChunkMesh(meshes[i]);
 		addGreedyJob(chunks[i]);
 	}
 }
@@ -146,6 +144,7 @@ void update()
 	buildMovementFromControls();
 
 	setCam(sim->movement);
+
 	for (int i = 0; i < numFinishedMeshes; i++)
 		renderChunkMesh(finishedMeshes[i]);
 }
