@@ -60,7 +60,7 @@ enum ShaderType
 
 void initRender();
 
-ChunkMesh* createChunkMesh(int allocVertices);
+ChunkMesh* createChunkMesh();
 void uploadChunkMesh(ChunkMesh *mesh);
 void renderChunkMesh(ChunkMesh *mesh);
 

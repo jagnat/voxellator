@@ -104,7 +104,7 @@ void setModelMatrix(Chunk *chunk, ChunkMesh *mesh)
 
 void meshVanillaNaive(Chunk *chunk, ChunkMesh *mesh)
 {
-	double startTime = getElapsedMs();
+	mesh->vertices = (VertexColorNormal10*)malloc(chunk->filledVoxels * 24 * sizeof(VertexColorNormal10));
 	setModelMatrix(chunk, mesh);
 
 	mesh->indexMode = INDEX_QUADS;
@@ -124,26 +124,36 @@ void meshVanillaNaive(Chunk *chunk, ChunkMesh *mesh)
 				if (chunk_getBlockUnchecked(chunk, x, y, z))
 					addCube(&context);
 			}
-	
-	double elapsedTime = getElapsedMs() - startTime;
-	printf("Naive: Chunk %d,%d,%d took %0.4f ms\n", chunk->x, chunk->y, chunk->z, elapsedTime);
 }
 
 void meshVanillaCull(Chunk *chunk, ChunkMesh *mesh)
 {
 	double startTime = getElapsedMs();
-	setModelMatrix(chunk, mesh);
 
-	mesh->indexMode = INDEX_QUADS;
+	VertexColorNormal10 *vertices = (VertexColorNormal10*)malloc(32 * sizeof(VertexColorNormal10));
+	int allocatedVerts = 32;
 
 	MeshBuildContext context = {0};
-	context.current = mesh->vertices;
+	context.current = vertices;
 	context.color = chunk->color;
 
 	for (int y = 0; y < CHUNK_SIZE; y++)
 		for (int z = 0; z < CHUNK_SIZE; z++)
 			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
+				if (context.numFaces * 4 + 24 >= allocatedVerts)
+				{
+					if (allocatedVerts * 2 >= 67108864)
+					{
+						printf("Exceeding bounds! Exiting...\n");
+						exit(400);
+					}
+					allocatedVerts *= 2;
+					int currentIndex = context.current - vertices;
+					vertices = (VertexColorNormal10*)realloc(vertices, allocatedVerts * sizeof(VertexColorNormal10));
+					context.current = vertices + currentIndex;
+				}
+
 				// TODO: Unroll, use unchecked lookups for extra speed
 				context.x = x; context.y = y; context.z = z;
 				if (chunk_getBlockUnchecked(chunk, x, y, z))
@@ -162,8 +172,15 @@ void meshVanillaCull(Chunk *chunk, ChunkMesh *mesh)
 						addFace(5, &context);
 				}
 			}
+	
+	setModelMatrix(chunk, mesh);
+
+	mesh->vertices = vertices;
+
+	mesh->indexMode = INDEX_QUADS;
 
 	mesh->usedVertices = context.numFaces * 4;
+	mesh->allocatedVertices = allocatedVerts;
 	mesh->numIndices = context.numFaces * 6;
 
 	double elapsedTime = getElapsedMs() - startTime;
@@ -178,7 +195,6 @@ struct MeshJobArgs
 
 void meshVanillaGreedyJobCompletion(void *args)
 {
-	// TODO: Add to list of meshes to render this frame
 	MeshJobArgs *real = (MeshJobArgs*)args;
 	uploadChunkMesh(real->mesh);
 	finishedMeshes[numFinishedMeshes++] = real->mesh;
@@ -191,11 +207,11 @@ void meshVanillaGreedyJobProc(void *args)
 	meshVanillaGreedy(casted->chunk, casted->mesh);
 }
 
-void addGreedyJob(Chunk *chunk, ChunkMesh *mesh)
+void addGreedyJob(Chunk *chunk)
 {
 	MeshJobArgs *args = (MeshJobArgs*)malloc(sizeof(MeshJobArgs));
 	args->chunk = chunk;
-	args->mesh = mesh;
+	args->mesh = createChunkMesh();
 	ThreadJob job = {0};
 	job.jobProc = meshVanillaGreedyJobProc;
 	job.completionProc = meshVanillaGreedyJobCompletion;
@@ -229,20 +245,14 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 #ifdef GREEDY_PRINT_TIME
 	double startTime = getElapsedMs();
 #endif
-	setModelMatrix(chunk, mesh);
-	mesh->indexMode = INDEX_QUADS;
-
-	MeshBuildContext context = {0};
-	context.current = mesh->vertices;
-	context.color.g=context.color.b=context.color.a=255;
-
-	// Mask - used to store whether or not a face is in a greedy rect yet
-	uint8 *mask = (uint8*)malloc(sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE);
 
 	// Dynamic buffer for vertices
 	int vertCap = 512, vertLen = 0;
-	VertexColorNormal10 *vert;
-	vert = (VertexColorNormal10*)malloc(sizeof(VertexColorNormal10) * vertCap);
+
+	VertexColorNormal10 *vertices = (VertexColorNormal10*)malloc(vertCap * sizeof(VertexColorNormal10));
+
+	// Mask - used to store whether or not a face is in a greedy rect yet
+	uint8 *mask = (uint8*)malloc(sizeof(uint8) * CHUNK_SIZE * CHUNK_SIZE);
 
 	for (int dim = 0; dim < 3; dim++) // Iterate through three dimensions
 	{
@@ -303,10 +313,10 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 								exit(300);
 							}
 							vertCap *= 2;
-							vert = (VertexColorNormal10*)realloc(vert, vertCap * sizeof(VertexColorNormal10));
+							vertices = (VertexColorNormal10*)realloc(vertices, vertCap * sizeof(VertexColorNormal10));
 						}
 	
-						VertexColorNormal10 *cV = vert + vertLen;
+						VertexColorNormal10 *cV = vertices + vertLen;
 	
 						uint norm = faceNormTable[dim * 2 + (face == -1 ? 0 : 1)];
 
@@ -335,9 +345,14 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 			}
 		}
 	}
+
+	setModelMatrix(chunk, mesh);
+	mesh->vertices = vertices;
+	mesh->indexMode = INDEX_QUADS;
 	
-	memcpy(mesh->vertices, vert, vertLen * sizeof(VertexColorNormal10));
-	free(vert);
+	//memcpy(mesh->vertices, vert, vertLen * sizeof(VertexColorNormal10));
+	//free(vert);
+	mesh->allocatedVertices = vertCap;
 	mesh->usedVertices = vertLen;
 	mesh->numIndices = (vertLen / 4) * 6;
 

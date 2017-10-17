@@ -8,7 +8,7 @@
 void meshVanillaNaive(Chunk *chunk, ChunkMesh *mesh);
 void meshVanillaCull(Chunk *chunk, ChunkMesh *mesh);
 void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh);
-void addGreedyJob(Chunk *chunk, ChunkMesh *mesh);
+void addGreedyJob(Chunk *chunk);
 
 // TODO: GROSS
 ChunkMesh **finishedMeshes = 0;

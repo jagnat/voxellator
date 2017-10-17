@@ -141,11 +141,9 @@ void initRender()
 	}
 }
 
-ChunkMesh* createChunkMesh(int allocVertices)
+ChunkMesh* createChunkMesh()
 {
-	ChunkMesh *mesh = (ChunkMesh*)calloc(1, sizeof(ChunkMesh) + allocVertices * sizeof(VertexColorNormal10));
-	mesh->vertices = (VertexColorNormal10*)(mesh + 1);
-	mesh->allocatedVertices = allocVertices;
+	ChunkMesh *mesh = (ChunkMesh*)calloc(1, sizeof(ChunkMesh));
 	glGenVertexArrays(1, &mesh->vaoId);
 	glGenBuffers(2, mesh->ids);
 

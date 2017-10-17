@@ -18,7 +18,6 @@ SimState *sim;
 
 const int chunkSize = 3;
 const int numChunks = chunkSize * chunkSize * chunkSize;
-ChunkMesh *meshes[numChunks];
 Chunk *chunks[numChunks];
 
 void init(PlatformState *plat)
@@ -42,7 +41,6 @@ void init(PlatformState *plat)
 			for (int y = 0; y < chunkSize; y++)
 			{
 				chunks[x * chunkSize * chunkSize + z * chunkSize + y] = createPerlinChunk(x, y, z);
-				meshes[x * chunkSize * chunkSize + z * chunkSize + y] = createChunkMesh(10000000);
 			}
 	
 	for (int i = 0; i < numChunks; i++)
@@ -52,7 +50,7 @@ void init(PlatformState *plat)
 		chunks[i]->color = c;
 		//meshVanillaGreedy(chunks[i], meshes[i]);
 		//uploadChunkMesh(meshes[i]);
-		addGreedyJob(chunks[i], meshes[i]);
+		addGreedyJob(chunks[i]);
 	}
 }
 
@@ -121,7 +119,6 @@ void processJobs()
 		tm->freeJobList = tm->freeJobList->next;
 		memcpy(freeJob, tm->jobQueue + i, sizeof(ThreadJob));
 		// create thread
-		printf("Creating a thread\n");
 		createThread(startJob, freeJob);
 		//startJob(freeJob);
 		tm->jobsActive++;

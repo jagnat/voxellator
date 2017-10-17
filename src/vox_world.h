@@ -2,6 +2,17 @@
 #ifndef _VOX_WORLD_H_
 #define _VOX_WORLD_H_
 
+#if !1
+void load()
+{
+}
+
+void update()
+{
+	if (
+}
+#endif
+
 #include "vox_platform.h"
 
 #define CHUNK_SIZE 64
@@ -20,6 +31,12 @@ struct ChunkSet
 	int currentX, currentY, currentZ;
 	Chunk** loaded;
 	Chunk** free;
+};
+
+enum GenMode
+{
+	GEN_PERL3D,
+	GEN_PERL2D
 };
 
 struct GenContext
