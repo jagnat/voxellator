@@ -56,6 +56,9 @@ void freeChunk(Chunk *chunk);
 void setChunkCoords(Chunk *chunk, int x, int y, int z);
 
 Chunk* createPerlinChunk(int x, int y, int z);
+void fillPerlinChunk(Chunk *c);
+
+void addPerlinChunkJob(int xc, int yzc, int zc);
 
 uint8 chunk_getBlockUnchecked(Chunk *chunk, int x, int y, int z);
 uint8 chunk_getBlockChecked(Chunk *chunk, int x, int y, int z);

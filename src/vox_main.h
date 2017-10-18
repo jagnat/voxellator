@@ -39,7 +39,7 @@ struct ThreadManager
 	int maxThreads;
 	// Circular queue
 	// TODO: Move to datastructure code
-#define JOB_QUEUE_LEN 1024
+#define JOB_QUEUE_LEN 4096
 	ThreadJob jobQueue[JOB_QUEUE_LEN];
 	ThreadJob *activeJobs;
 	ThreadJob *freeJobList;

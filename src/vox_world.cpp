@@ -40,20 +40,41 @@ inline bool chunk__inChunk(int x, int y, int z)
 void setChunkCoords(Chunk *chunk, int x, int y, int z)
 { chunk->x = x; chunk->y = y; chunk->z = z; }
 
-// TODO: Use a generation context instead of a hardcoded seed
-Chunk* createPerlinChunk(int xc, int yc, int zc)
+void createPerlinChunkJobProc(void *args)
+{
+	fillPerlinChunk((Chunk*)args);
+}
+
+void createPerlinChunkJobCompletion(void *args)
+{
+	addGreedyJob((Chunk*)args);
+}
+
+void addPerlinChunkJob(int xc, int yc, int zc)
 {
 	Chunk *c = createEmptyChunk();
+	Color col = {50, 100, 50, 255};
+	c->color = col;
 	allocateChunkData(c);
 	setChunkCoords(c, xc, yc, zc);
+	ThreadJob job = {};
+	job.jobProc = createPerlinChunkJobProc;
+	job.completionProc = createPerlinChunkJobCompletion;
+	job.args = c;
+	addJob(job);
+}
 
+//#define USE_3D_PERLIN
+
+void fillPerlinChunk(Chunk *c)
+{
 	seedPerlin3(5490386205987);
-	xc *= CHUNK_SIZE; yc *= CHUNK_SIZE; zc *= CHUNK_SIZE;
+	int xc = CHUNK_SIZE * c->x, yc = CHUNK_SIZE * c->y, zc = CHUNK_SIZE * c->z;
 	for (int x = -1; x < CHUNK_SIZE + 1; x++)
 		for (int z = -1; z < CHUNK_SIZE + 1; z++)
 			for (int y = -1; y < CHUNK_SIZE + 1; y++)
 			{
-#if 0
+#ifdef USE_3D_PERLIN
 				float p = perlin3((xc + x) / 30.0, (yc + y) / 30.0, (zc + z) / 30.0);
 				if (p > 0)
 				{
@@ -73,6 +94,16 @@ Chunk* createPerlinChunk(int xc, int yc, int zc)
 
 #endif
 			}
+}
+
+// TODO: Use a generation context instead of a hardcoded seed
+Chunk* createPerlinChunk(int xc, int yc, int zc)
+{
+	Chunk *c = createEmptyChunk();
+	allocateChunkData(c);
+	setChunkCoords(c, xc, yc, zc);
+
+	fillPerlinChunk(c);
 	
 	return c;
 }
