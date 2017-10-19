@@ -4,6 +4,7 @@
 #include "vox_render.h"
 #include "vox_world.h"
 #include "vox_mesher.h"
+#include "vox_noise.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -34,6 +35,7 @@ void init(PlatformState *plat)
 
 	initRender();
 
+	seedPerlin3(349278650234309);
 	finishedMeshes = (ChunkMesh**)calloc(numChunks, sizeof(ChunkMesh*));
 
 	for (int x = 0; x < chunkSize; x++)

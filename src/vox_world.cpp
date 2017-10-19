@@ -68,7 +68,6 @@ void addPerlinChunkJob(int xc, int yc, int zc)
 
 void fillPerlinChunk(Chunk *c)
 {
-	seedPerlin3(5490386205987);
 	int xc = CHUNK_SIZE * c->x, yc = CHUNK_SIZE * c->y, zc = CHUNK_SIZE * c->z;
 	for (int x = -1; x < CHUNK_SIZE + 1; x++)
 		for (int z = -1; z < CHUNK_SIZE + 1; z++)
@@ -91,7 +90,6 @@ void fillPerlinChunk(Chunk *c)
 					if (chunk__inChunk(x, y, z))
 						c->filledVoxels++;
 				}
-
 #endif
 			}
 }
