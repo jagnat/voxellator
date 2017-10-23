@@ -47,7 +47,8 @@ void createPerlinChunkJobProc(void *args)
 
 void createPerlinChunkJobCompletion(void *args)
 {
-	addGreedyJob((Chunk*)args);
+	if (!((Chunk*)args)->empty)
+		addGreedyJob((Chunk*)args);
 }
 
 void addPerlinChunkJob(int xc, int yc, int zc)

@@ -19,6 +19,7 @@ void update()
 
 struct Chunk
 {
+	bool created;
 	bool empty;
 	int filledVoxels;
 	uint8 *data;
@@ -29,7 +30,7 @@ struct Chunk
 struct ChunkSet
 {
 	int currentX, currentY, currentZ;
-	Chunk** loaded;
+	Chunk** chunks;
 	Chunk** free;
 };
 

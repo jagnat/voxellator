@@ -17,7 +17,7 @@
 PlatformState *platform;
 SimState *sim;
 
-const int chunkSize = 8;
+const int chunkSize = 16;
 const int numChunks = chunkSize * chunkSize * chunkSize;
 Chunk *chunks[numChunks];
 
@@ -42,27 +42,15 @@ void init(PlatformState *plat)
 		for (int z = 0; z < chunkSize; z++)
 			for (int y = 0; y < chunkSize; y++)
 			{
-				//chunks[x * chunkSize * chunkSize + z * chunkSize + y] = createPerlinChunk(x, y, z);
 				addPerlinChunkJob(x, y, z);
 			}
-	
-	/*
-	for (int i = 0; i < numChunks; i++)
-	{
-		//Color c = {50, (uint8)(100 + rand() % 50), 50};
-		Color c = {50, 100, 50};
-		chunks[i]->color = c;
-		addGreedyJob(chunks[i]);
-	}
-	*/
 }
 
 /// {
 void initThreadManager()
 {
 	ThreadManager *tm = &sim->threading;
-	//tm->maxThreads = platform->info.logicalCores - 1;
-	tm->maxThreads = 32;
+	tm->maxThreads = platform->info.logicalCores - 1;
 	tm->activeJobs = (ThreadJob*)calloc(tm->maxThreads, sizeof(ThreadJob));
 	tm->freeJobList = tm->activeJobs;
 	// Last job slot already points to null
