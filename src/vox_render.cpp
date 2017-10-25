@@ -143,6 +143,13 @@ void initRender()
 	}
 }
 
+void resizeRender(int w, int h)
+{
+	glViewport(0, 0, w, h);
+	renderer->projMatrix = JMat4_PerspectiveFOV((70.0f * 3.14159f) / 180.0f,
+	(float)w/(float)h, 0.001f, 10000.f);
+}
+
 ChunkMesh* createChunkMesh()
 {
 	ChunkMesh *mesh = (ChunkMesh*)calloc(1, sizeof(ChunkMesh));

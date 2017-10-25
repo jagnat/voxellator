@@ -17,7 +17,7 @@
 PlatformState *platform;
 SimState *sim;
 
-const int chunkSize = 16;
+const int chunkSize = 8;
 const int numChunks = chunkSize * chunkSize * chunkSize;
 Chunk *chunks[numChunks];
 
@@ -258,7 +258,7 @@ void handleEvents()
 				break;
 
 				case EVENT_RESIZE:
-				// TODO: Handle GL viewport resize
+				resizeRender(e.resize.width, e.resize.height);
 				break;
 			}
 		}

@@ -59,6 +59,7 @@ enum ShaderType
 };
 
 void initRender();
+void resizeRender(int w, int h);
 
 ChunkMesh* createChunkMesh();
 void uploadChunkMesh(ChunkMesh *mesh);
