@@ -5,6 +5,7 @@
 #include "vox_world.h"
 #include "vox_mesher.h"
 #include "vox_noise.h"
+#include "vox_jobs.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -31,7 +32,7 @@ void init(PlatformState *plat)
 	sim->movement.yaw = M_PI + M_PI / 4;
 	sim->movement.pitch = -M_PI / 5;
 
-	initThreadManager();
+	initJobSystem(platform->info.logicalCores - 1);
 
 	initRender();
 
@@ -45,86 +46,6 @@ void init(PlatformState *plat)
 				addPerlinChunkJob(x, y, z);
 			}
 }
-
-/// {
-void initThreadManager()
-{
-	ThreadManager *tm = &sim->threading;
-	tm->maxThreads = platform->info.logicalCores - 1;
-	tm->activeJobs = (ThreadJob*)calloc(tm->maxThreads, sizeof(ThreadJob));
-	tm->freeJobList = tm->activeJobs;
-	// Last job slot already points to null
-	for (int i = 0; i < tm->maxThreads - 1; i++)
-	{
-		tm->activeJobs[i].next = &tm->activeJobs[i + 1];
-	}
-}
-
-void startJob(void *arg)
-{
-	ThreadJob *job = (ThreadJob*)arg;
-	job->jobProc(job->args);
-	atomicIncrement(&job->done);
-}
-
-bool addJob(ThreadJob job)
-{
-	if (sim->threading.jobsQueued >= JOB_QUEUE_LEN)
-		return false;
-	
-	sim->threading.jobQueue[sim->threading.jobsQueued++] = job;
-	return true;
-}
-
-void processJobs()
-{
-	ThreadManager *tm = &sim->threading;
-
-	// Iterate through running threads and erase old ones
-	for (int i = 0; i < tm->maxThreads; i++)
-	{
-		if (tm->activeJobs[i].done)
-		{
-			tm->activeJobs[i].completionProc(tm->activeJobs[i].args);
-
-			// Zero out and add to free list
-			memset((void*)(tm->activeJobs + i), 0, sizeof(ThreadJob)); // Might be unnecessary
-			tm->activeJobs[i].next = tm->freeJobList;
-			tm->freeJobList = tm->activeJobs + i;
-			tm->jobsActive--;
-		}
-	}
-
-	int availableThreads = tm->maxThreads - tm->jobsActive;
-	if (availableThreads <= 0)
-		return;
-
-	int jobsSpawned = 0;
-	
-	// Spawn new threads if we have room
-	for (int i = 0; i < tm->jobsQueued; i++)
-	{
-		if (i >= availableThreads)
-			break;
-		// Remove first entry from free list
-		ThreadJob *freeJob = tm->freeJobList;
-		tm->freeJobList = tm->freeJobList->next;
-		memcpy(freeJob, tm->jobQueue + i, sizeof(ThreadJob));
-		// create thread
-		createThread(startJob, freeJob);
-		//startJob(freeJob);
-		tm->jobsActive++;
-		jobsSpawned++;
-	}
-
-	for (int i = jobsSpawned; i < tm->jobsQueued; i++)
-	{
-		memcpy(tm->jobQueue + i - jobsSpawned, tm->jobQueue + i, sizeof(ThreadJob));
-	}
-
-	tm->jobsQueued -= jobsSpawned;
-}
-/// }
 
 void handleEvents();
 
@@ -269,4 +190,5 @@ void handleEvents()
 #include "vox_noise.cpp"
 #include "vox_mesher.cpp"
 #include "vox_world.cpp"
+#include "vox_jobs.cpp"
 

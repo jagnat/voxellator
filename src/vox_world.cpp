@@ -58,7 +58,7 @@ void addPerlinChunkJob(int xc, int yc, int zc)
 	c->color = col;
 	allocateChunkData(c);
 	setChunkCoords(c, xc, yc, zc);
-	ThreadJob job = {};
+	Job job = {};
 	job.jobProc = createPerlinChunkJobProc;
 	job.completionProc = createPerlinChunkJobCompletion;
 	job.args = c;

@@ -22,39 +22,8 @@ struct Controls
 	float screenDeltaX, screenDeltaY;
 };
 
-// ------ Begin thread stuff ------
-// TODO: Move this all into its own file
-
-struct ThreadJob
-{
-	void (*jobProc) (void*);
-	void (*completionProc) (void*);
-	void *args;
-	volatile int done;
-	ThreadJob *next; // Implementation-only
-};
-
-struct ThreadManager
-{
-	int maxThreads;
-	// Circular queue
-	// TODO: Move to datastructure code
-#define JOB_QUEUE_LEN 4096
-	ThreadJob jobQueue[JOB_QUEUE_LEN];
-	ThreadJob *activeJobs;
-	ThreadJob *freeJobList;
-	int jobsQueued;
-	int jobsActive;
-};
-
-void initThreadManager();
-void processJobs();
-bool addJob(ThreadJob job);
-// ------ End thread stuff ------
-
 struct SimState
 {
-	ThreadManager threading;
 	Controls controls;
 	Movement movement;
 };

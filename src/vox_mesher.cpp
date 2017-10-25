@@ -214,10 +214,11 @@ void addGreedyJob(Chunk *chunk)
 	MeshJobArgs *args = (MeshJobArgs*)malloc(sizeof(MeshJobArgs));
 	args->chunk = chunk;
 	args->mesh = createChunkMesh();
-	ThreadJob job = {0};
+	Job job = {0};
 	job.jobProc = meshVanillaGreedyJobProc;
 	job.completionProc = meshVanillaGreedyJobCompletion;
 	job.args = args;
+	job.priority = 100;
 	addJob(job);
 }
 
