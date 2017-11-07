@@ -69,13 +69,15 @@ void addPerlinChunkJob(int xc, int yc, int zc)
 
 void fillPerlinChunk(Chunk *c)
 {
+	Perlin3 perl;
+	seedPerlin3(&perl, 420895928332);
 	int xc = CHUNK_SIZE * c->x, yc = CHUNK_SIZE * c->y, zc = CHUNK_SIZE * c->z;
 	for (int x = -1; x < CHUNK_SIZE + 1; x++)
 		for (int z = -1; z < CHUNK_SIZE + 1; z++)
 			for (int y = -1; y < CHUNK_SIZE + 1; y++)
 			{
 #ifdef USE_3D_PERLIN
-				float p = perlin3((xc + x) / 30.0, (yc + y) / 30.0, (zc + z) / 30.0);
+				float p = perlin3(&perl, (xc + x) / 30.0, (yc + y) / 30.0, (zc + z) / 30.0);
 				if (p > 0)
 				{
 					chunk_setBlockUnchecked(c, 255, x, y, z);
@@ -83,9 +85,9 @@ void fillPerlinChunk(Chunk *c)
 						c->filledVoxels++;
 				}
 #else
-				float p = perlin3((xc + x) / 30.0, 298.3219f, (zc + z) / 30.0);
+				float p = perlin3(&perl, (xc + x) / 30.0, 298.3219f, (zc + z) / 30.0);
 				p = (p + 1) / 2;
-				if ((double)((yc + y) / 120.0f) < p)
+				if ((double)((yc + y) / 60.0f) < p)
 				{
 					chunk_setBlockUnchecked(c, 255, x, y, z);
 					if (chunk__inChunk(x, y, z))
@@ -95,7 +97,6 @@ void fillPerlinChunk(Chunk *c)
 			}
 }
 
-// TODO: Use a generation context instead of a hardcoded seed
 Chunk* createPerlinChunk(int xc, int yc, int zc)
 {
 	Chunk *c = createEmptyChunk();

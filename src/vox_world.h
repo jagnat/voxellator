@@ -2,6 +2,8 @@
 #ifndef _VOX_WORLD_H_
 #define _VOX_WORLD_H_
 
+#include "vox_noise.h"
+
 #if !1
 void load()
 {
@@ -42,6 +44,8 @@ enum GenMode
 
 struct GenContext
 {
+	GenMode mode;
+	Perlin3 perlin;
 	uint64 seed;
 };
 
@@ -49,6 +53,8 @@ struct World
 {
 	GenContext gen;
 	ChunkSet set;
+
+	void init();
 };
 
 Chunk* createEmptyChunk();
