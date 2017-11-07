@@ -69,8 +69,10 @@ void addPerlinChunkJob(int xc, int yc, int zc)
 
 void fillPerlinChunk(Chunk *c)
 {
+	// TODO: DON'T DO THIS EVERY CHUNK
 	Perlin3 perl;
 	seedPerlin3(&perl, 420895928332);
+
 	int xc = CHUNK_SIZE * c->x, yc = CHUNK_SIZE * c->y, zc = CHUNK_SIZE * c->z;
 	for (int x = -1; x < CHUNK_SIZE + 1; x++)
 		for (int z = -1; z < CHUNK_SIZE + 1; z++)
