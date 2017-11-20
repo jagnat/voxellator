@@ -1,5 +1,7 @@
 # Voxellator
 
+![A rough screenshot](doc/voxels_rough.png)
+
 This is a hobby project I'm writing to get familiar with programming voxels, and play around
 with different methods of doing terrain generation, voxel meshing, and shading.
 This is also an experiment in using minimal libraries and external code bases.
