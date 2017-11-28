@@ -18,9 +18,8 @@
 PlatformState *platform;
 SimState *sim;
 
-const int chunkSize = 8;
+const int chunkSize = 4;
 const int numChunks = chunkSize * chunkSize * chunkSize;
-Chunk *chunks[numChunks];
 
 void init(PlatformState *plat)
 {
@@ -31,6 +30,8 @@ void init(PlatformState *plat)
 	sim->movement.pos.y = 80;
 	sim->movement.yaw = M_PI + M_PI / 4;
 	sim->movement.pitch = -M_PI / 5;
+
+	initWorld(&sim->world, 49839594734698ul);
 
 	initJobSystem(platform->info.logicalCores - 1);
 

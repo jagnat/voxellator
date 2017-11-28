@@ -3,6 +3,8 @@
 
 #include "thirdparty/j_threedee.h"
 
+#include "vox_world.h"
+
 struct Movement
 {
 	float topSpeed, accelFactor;
@@ -24,6 +26,7 @@ struct Controls
 
 struct SimState
 {
+	World world;
 	Controls controls;
 	Movement movement;
 };

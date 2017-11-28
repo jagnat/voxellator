@@ -2,6 +2,19 @@
 
 #include "vox_noise.h"
 
+void initWorld(World *wld, uint64 seed)
+{
+	wld->gen.seed = seed;
+	wld->gen.mode = GEN_PERL2D;
+	seedPerlin3(&wld->gen.perlin, wld->gen.seed);
+
+	// Init chunk free list
+	wld->freeChunks = wld->chunkList;
+	wld->chunkList[NUM_ALLOCATED_CHUNKS - 1].next = 0; // Might be unnecessary, because of calloc
+	for (int i = 0; i < NUM_ALLOCATED_CHUNKS - 1; i++)
+		wld->chunkList[i].next = wld->chunkList + i + 1;
+}
+
 Chunk* createEmptyChunk()
 {
 	Chunk *c = (Chunk*)calloc(1, sizeof(Chunk));
@@ -53,8 +66,9 @@ void createPerlinChunkJobCompletion(void *args)
 
 void addPerlinChunkJob(int xc, int yc, int zc)
 {
+	// TODO: Pull chunk from free list instead
 	Chunk *c = createEmptyChunk();
-	Color col = {50, 100, 50, 255};
+	Color col = {80, 50, 100, 255};
 	c->color = col;
 	allocateChunkData(c);
 	setChunkCoords(c, xc, yc, zc);
@@ -89,7 +103,7 @@ void fillPerlinChunk(Chunk *c)
 #else
 				float p = perlin3(&perl, (xc + x) / 30.0, 298.3219f, (zc + z) / 30.0);
 				p = (p + 1) / 2;
-				if ((double)((yc + y) / 60.0f) < p)
+				if ((double)((yc + y) / 120.0f) < p)
 				{
 					chunk_setBlockUnchecked(c, 255, x, y, z);
 					if (chunk__inChunk(x, y, z))
