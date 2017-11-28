@@ -4,5 +4,4 @@
 *.o
 *.out
 *.suo
-/win/shaders/
 /win/.vs/
