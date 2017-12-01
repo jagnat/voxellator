@@ -508,6 +508,28 @@ void atomicDecrement(volatile int *val)
 	InterlockedDecrement((LONG*)val);
 }
 
+void* createMutex()
+{
+	// TODO: GROSS
+	LPCRITICAL_SECTION cs = (LPCRITICAL_SECTION)malloc(sizeof(CRITICAL_SECTION));
+	InitializeCriticalSection(cs);
+	return (void*)cs;
+}
+
+int lockMutex(void *mutex)
+{
+	LPCRITICAL_SECTION cs = (LPCRITICAL_SECTION)mutex;
+	EnterCriticalSection(cs); // TODO: Use TryEnterCriticalException, return a code
+	return 0;
+}
+
+int unlockMutex(void *mutex)
+{
+	LPCRITICAL_SECTION cs = (LPCRITICAL_SECTION)mutex;
+	LeaveCriticalSection(cs); // TODO: Same as lockMutex
+	return 0;
+}
+
 double getElapsedMs()
 {
 	LARGE_INTEGER res;

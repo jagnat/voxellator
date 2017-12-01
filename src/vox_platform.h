@@ -117,5 +117,9 @@ bool createThread(void (*threadProc)(void*), void *threadData);
 void atomicIncrement(volatile int *val);
 void atomicDecrement(volatile int *val);
 
+void* createMutex();
+int lockMutex(void *mutex);
+int unlockMutex(void* mutex);
+
 #endif //_VOX_PLATFORM_H_
 
