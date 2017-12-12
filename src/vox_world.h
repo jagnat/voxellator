@@ -35,7 +35,7 @@ render()
 
 struct Chunk
 {
-	bool created;
+	bool hasData;
 	bool empty;
 	int filledVoxels;
 	uint8 *data;
@@ -59,15 +59,14 @@ struct GenContext
 	uint64 seed;
 };
 
-#define NUM_ALLOCATED_CHUNKS 128
+#define NUM_ALLOCATED_CHUNKS 32
 struct World
 {
 	int centerX, centerY, centerZ;
 	GenContext gen;
 	Chunk chunkList[NUM_ALLOCATED_CHUNKS];
 	Chunk *freeChunks;
-	int numDataBuffers;
-	uint8 *dataBuffers;
+	uint8 *dataBlocks;
 };
 
 void initWorld(World *world, uint64 seed);

@@ -8,11 +8,20 @@ void initWorld(World *wld, uint64 seed)
 	wld->gen.mode = GEN_PERL2D;
 	seedPerlin3(&wld->gen.perlin, wld->gen.seed);
 
+	int realSize = CHUNK_SIZE + 2;
+	int chunkDataStride = sizeof(uint8) * realSize * realSize * realSize;
+	wld->dataBlocks = (uint8*)calloc(NUM_ALLOCATED_CHUNKS, chunkDataStride);
+
 	// Init chunk free list
 	wld->freeChunks = wld->chunkList;
 	wld->chunkList[NUM_ALLOCATED_CHUNKS - 1].next = 0; // Might be unnecessary, because of calloc
 	for (int i = 0; i < NUM_ALLOCATED_CHUNKS - 1; i++)
+	{
 		wld->chunkList[i].next = wld->chunkList + i + 1;
+		wld->chunkList[i].data = &wld->dataBlocks[i * chunkDataStride];
+	}
+	wld->chunkList[NUM_ALLOCATED_CHUNKS - 1].data =
+		&wld->dataBlocks[(NUM_ALLOCATED_CHUNKS - 1) * chunkDataStride];
 }
 
 Chunk* createEmptyChunk()
