@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "vox_gldefs.h"
+
 typedef struct
 {
 	WNDCLASSEX windowClass;
@@ -485,6 +487,18 @@ int win32_createGLContext()
 
 	wglMakeCurrent(dc, win32->glRenderContext);
 	wglDeleteContext(tempRC);
+
+	// Load GL functions
+	#define GLDEF(ret, name, ...) gl##name = \
+		(name##proc *) wglGetProcAddress("gl" #name);
+	GL_LIST
+	#undef GLDEF
+
+	// Ensure functions have successfully loaded
+	// TODO: something more robust for release mode
+	#define GLDEF(retrn, name, ...) assert(gl##name);
+	GL_LIST
+	#undef GLDEF
 
 	return 0;
 }

@@ -27,4 +27,4 @@ void initJobSystem(int maxThreads);
 void processJobs();
 void addJob(Job job);
 
-#endif _VOX_JOBS_H_
+#endif //_VOX_JOBS_H_
