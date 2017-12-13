@@ -1,4 +1,6 @@
-// NOTE: No include guards, since this needs to be included more than once
+#pragma once
+#ifndef _VOX_GLDEFS_H_
+#define _VOX_GLDEFS_H_
 
 #define GL_LIST \
 /* Begin gl funcs*/ \
@@ -41,3 +43,4 @@ static name##proc * gl##name;
 GL_LIST
 #undef GLDEF
 
+#endif // _VOX_GLDEFS_H_

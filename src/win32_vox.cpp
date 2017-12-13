@@ -5,6 +5,7 @@
 #undef near
 #undef far
 #include <GL/gl.h>
+#include "thirdparty/glext.h"
 #include "thirdparty/wglext.h"
 
 #include <stdio.h>
