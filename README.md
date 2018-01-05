@@ -1,4 +1,7 @@
 # Voxellator
+### Controls
+Press L to lock and unlock the camera. This switches between the mouse being free and stuck in the window.
+WASD for movement, Space to ascend, LShift to descend.
 
 ![A rough screenshot](doc/voxels-rough.png)
 
