@@ -191,9 +191,38 @@ static void sdl_loadGlFuncs()
 	#undef GLDEF
 }
 
-void createThread(void (*threadProc)(void*), void *threadArgs)
+struct sdl_threadwrapper
 {
+	void (*threadProc)(void*);
+	void *threadArgs;
+};
 
+int sdl_dummyThreadProc(void *args)
+{
+	sdl_threadwrapper *tw = (sdl_threadwrapper*)args;
+	tw->threadProc(tw->threadArgs);
+	free(args);
+	return 0;
+}
+
+bool createThread(void (*threadProc)(void*), void *threadArgs)
+{
+	//SDL_CreateThread(int (*threadproc)(void*), void *data);
+	sdl_threadwrapper *w = (sdl_threadwrapper*)malloc(sizeof(sdl_threadwrapper));
+	w->threadProc = threadProc;
+	w->threadArgs = threadArgs;
+	SDL_CreateThread(sdl_dummyThreadProc, "test_name", w);
+	return true;
+}
+
+void atomicIncrement(volatile int *val)
+{
+	SDL_AtomicIncRef((SDL_atomic_t*)val);
+}
+
+void atomicDecrement(volatile int *val)
+{
+	SDL_AtomicDecRef((SDL_atomic_t*)val);
 }
 
 double getElapsedMs()
