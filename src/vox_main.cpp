@@ -153,19 +153,24 @@ void handleEvents()
 				switch(e.key.keyCode)
 				{
 					case 'L':
+					case 'l':
 					if (e.key.state == BUTTON_PRESSED)
 						setMouseState(!(platform->flags & MOUSE_LOCKED));
 					break;
 					case 'W':
+					case 'w':
 					controls->forward = e.key.state == BUTTON_PRESSED;
 					break;
 					case 'A':
+					case 'a':
 					controls->left = e.key.state == BUTTON_PRESSED;
 					break;
 					case 'S':
+					case 's':
 					controls->backward = e.key.state == BUTTON_PRESSED;
 					break;
 					case 'D':
+					case 'd':
 					controls->right = e.key.state == BUTTON_PRESSED;
 					break;
 					// TODO: Make special keys platform-agnostic
@@ -182,6 +187,8 @@ void handleEvents()
 				case EVENT_RESIZE:
 				resizeRender(e.resize.width, e.resize.height);
 				break;
+
+				default: break;
 			}
 		}
 	}

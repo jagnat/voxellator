@@ -76,6 +76,7 @@ int main(int argc, char **argv)
 		if (elapsedTime > 100.L)
 		{
 			// TODO: Diagnose
+			printf("Running slow!\n");
 			elapsedTime = 100;
 		}
 
@@ -144,6 +145,8 @@ void sdl_postEvent(Event event)
 
 static void sdl_handleEvents()
 {
+	Event post;
+
 	SDL_Event e;
 	while (SDL_PollEvent(&e))
 	{
@@ -171,6 +174,18 @@ static void sdl_handleEvents()
 					}
 					break;
 				}
+			}
+			break;
+
+			case SDL_KEYDOWN:
+			case SDL_KEYUP:
+			{
+				if (e.key.keysym.sym == SDLK_ESCAPE)
+					sdl_platform->running = false;
+				post.type = EVENT_KEY;
+				post.key.keyCode = e.key.keysym.sym;
+				post.key.state = e.key.state == SDL_PRESSED? BUTTON_PRESSED : BUTTON_RELEASED;
+				sdl_postEvent(post);
 			}
 			break;
 		}
