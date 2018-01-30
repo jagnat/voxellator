@@ -373,8 +373,6 @@ LRESULT CALLBACK win32_windowProc(
 				POINT center = win32_getCenterScreen();
 				POINT now;
 				GetCursorPos(&now);
-				if (now.x == center.x && now.y == center.y)
-					break;
 				e.mouseMove.locked = true;
 				e.mouseMove.dx = now.x - center.x; //win32->mouseDeltaX;
 				e.mouseMove.dy = now.y - center.y; //win32->mouseDeltaY;

@@ -36,12 +36,14 @@ int main(int argc, char **argv)
 	sdl_platform->running = true;
 	sdl_platform->updateTarget = 1000.L / 120.L;
 	sdl_platform->renderTarget = 1000.L / 60.L;
+	sdl_platform->viewportWidth = 1280;
+	sdl_platform->viewportHeight = 720;
 
 	sdl_platform->info.logicalCores = SDL_GetCPUCount();
 
 	sdl->window = SDL_CreateWindow("Voxellator",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		640, 480,
+		1280, 720,
 		SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	if (!sdl->window)
 		return 1;
@@ -165,6 +167,7 @@ static void sdl_handleEvents()
 				{
 					case SDL_WINDOWEVENT_RESIZED:
 					{
+						printf("resize\n");
 						post.type = EVENT_RESIZE;
 						post.resize.width = e.window.data1;
 						post.resize.height = e.window.data2;
@@ -182,9 +185,31 @@ static void sdl_handleEvents()
 			{
 				if (e.key.keysym.sym == SDLK_ESCAPE)
 					sdl_platform->running = false;
+
 				post.type = EVENT_KEY;
 				post.key.keyCode = e.key.keysym.sym;
+				if (e.key.keysym.sym == SDLK_LSHIFT)
+					post.key.keyCode = 0xa0; // TODO: FIX THIS STUPID HACK
 				post.key.state = e.key.state == SDL_PRESSED? BUTTON_PRESSED : BUTTON_RELEASED;
+				sdl_postEvent(post);
+			}
+			break;
+
+			case SDL_MOUSEMOTION:
+			{
+				post.type = EVENT_MOUSE_MOVE;
+				post.mouseMove.x = e.motion.x;
+				post.mouseMove.y = e.motion.y;
+				
+				if (getPlatformFlag(MOUSE_LOCKED))
+				{
+					int cX = sdl_platform->viewportWidth / 2;
+					int cY = sdl_platform->viewportHeight / 2;
+					post.mouseMove.locked = true;
+					post.mouseMove.dx = e.motion.x - cX;
+					post.mouseMove.dy = e.motion.y - cY;
+				}
+
 				sdl_postEvent(post);
 			}
 			break;

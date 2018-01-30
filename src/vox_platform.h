@@ -67,10 +67,13 @@ struct ResizeEvent
 struct Event
 {
 	EventType type;
-	KeyEvent key;
-	MouseClickEvent mouseClick;
-	MouseMoveEvent mouseMove;
-	ResizeEvent resize;
+	union
+	{
+		KeyEvent key;
+		MouseClickEvent mouseClick;
+		MouseMoveEvent mouseMove;
+		ResizeEvent resize;
+	};
 };
 
 // NOTE: The platform must serialize/deserialize this at init/exit
