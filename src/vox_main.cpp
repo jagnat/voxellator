@@ -37,7 +37,6 @@ void init(PlatformState *plat)
 
 	initRender();
 
-	//seedPerlin3(349278650234309);
 	finishedMeshes = (ChunkMesh**)calloc(numChunks, sizeof(ChunkMesh*));
 
 	for (int x = 0; x < chunkSize; x++)

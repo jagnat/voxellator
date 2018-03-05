@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 
 	sdl->window = SDL_CreateWindow("Voxellator",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		1280, 720,
+		sdl_platform->viewportWidth, sdl_platform->viewportHeight,
 		SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	if (!sdl->window)
 		return 1;
