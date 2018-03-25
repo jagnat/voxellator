@@ -17,6 +17,7 @@ void initJobSystem(int maxThreads)
 
 }
 
+// Free any slots for threads that are done
 static void freeThreads(JobManager *jm)
 {
 	for (int i = 0; i < jm->maxThreads; i++)
@@ -33,6 +34,7 @@ static void freeThreads(JobManager *jm)
 	}
 }
 
+// Extract top job from heap
 static Job extractJob(JobManager *jm)
 {
 	Job *heap = jm->jobHeap;
@@ -61,6 +63,7 @@ static Job extractJob(JobManager *jm)
 	return top;
 }
 
+// Thread procedure for a job
 void startJob(void *arg)
 {
 	Job *job = (Job*)arg;
@@ -68,6 +71,7 @@ void startJob(void *arg)
 	atomicIncrement(&job->done);
 }
 
+// Process any pending jobs, assign to threads if available
 void processJobs()
 {
 	JobManager *jm = jobManager;
@@ -93,6 +97,7 @@ void processJobs()
 	}
 }
 
+// Add job to job queue
 void addJob(Job job)
 {
 	JobManager *jm = jobManager;
