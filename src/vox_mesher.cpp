@@ -216,7 +216,7 @@ void addGreedyJob(Chunk *chunk)
 	args->mesh = createChunkMesh();
 	Job job = {0};
 	job.jobProc = meshVanillaGreedyJobProc;
-	job.completionProc = meshVanillaGreedyJobCompletion;
+	//job.completionProc = meshVanillaGreedyJobCompletion;
 	job.args = args;
 	job.priority = 100;
 	addJob(job);

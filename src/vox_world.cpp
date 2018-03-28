@@ -83,7 +83,7 @@ void addPerlinChunkJob(int xc, int yc, int zc)
 	setChunkCoords(c, xc, yc, zc);
 	Job job = {};
 	job.jobProc = createPerlinChunkJobProc;
-	job.completionProc = createPerlinChunkJobCompletion;
+	//job.completionProc = createPerlinChunkJobCompletion;
 	job.args = c;
 	addJob(job);
 }

@@ -2,22 +2,43 @@
 
 JobManager *jobManager;
 
+static Job extractJob(JobManager *jm);
+
+static void jobThreadProc(void* data)
+{
+	JobManager *jm = (JobManager*)data;
+	while (true)
+	{
+		Job job = extractJob(jm);
+		if (!job.jobProc) // Heap was empty
+			continue;
+		job.jobProc(job.args);
+	}
+}
+
 void initJobSystem(int maxThreads)
 {
 	jobManager = (JobManager*)calloc(1, sizeof(JobManager));
 
 	jobManager->maxThreads = maxThreads;
-	jobManager->runningJobs = (Job*)calloc(jobManager->maxThreads, sizeof(Job));
-	jobManager->freeJobs = jobManager->runningJobs;
-	for (int i = 0; i < jobManager->maxThreads - 1; i++)
-		jobManager->runningJobs[i].next = jobManager->runningJobs + i + 1;
+	//jobManager->runningJobs = (Job*)calloc(jobManager->maxThreads, sizeof(Job));
+	//jobManager->freeJobs = jobManager->runningJobs;
+	//for (int i = 0; i < jobManager->maxThreads - 1; i++)
+	//	jobManager->runningJobs[i].next = jobManager->runningJobs + i + 1;
 
 	jobManager->heapSize = 1024;
+	jobManager->jobsQueued = 0;
 	jobManager->jobHeap = (Job*)calloc(jobManager->heapSize, sizeof(Job));
-
+	jobManager->heapLock = createMutex();
+	if (!jobManager->heapLock)
+		printf("Err creating heap lock\n"); // TODO: Fix
+	
+	for (int i = 0; i < jobManager->maxThreads - 1; i++)
+		createThread(jobThreadProc, jobManager);
 }
 
 // Free any slots for threads that are done
+#if 0
 static void freeThreads(JobManager *jm)
 {
 	for (int i = 0; i < jm->maxThreads; i++)
@@ -33,45 +54,57 @@ static void freeThreads(JobManager *jm)
 		}
 	}
 }
+#endif
 
 // Extract top job from heap
 static Job extractJob(JobManager *jm)
 {
+	lockMutex(jm->heapLock);
 	Job *heap = jm->jobHeap;
-	Job top = heap[0];
-	heap[0] = heap[--jm->jobsQueued];
+	Job top = {};
 
-	int index = 0;
-	while (index * 2 + 1 < jm->jobsQueued)
+	if (jm->jobsQueued > 0)
 	{
-		// Decide which leaf to sift down
-		int swapChild = index * 2 + 1;
-		if (swapChild + 1 < jm->jobsQueued && heap[swapChild + 1].priority > heap[swapChild].priority)
-			swapChild++;
+		top = heap[0];
+		heap[0] = heap[--jm->jobsQueued];
 
-		// Sift
-		if (heap[index].priority < heap[swapChild].priority)
+		int index = 0;
+		while (index * 2 + 1 < jm->jobsQueued)
 		{
-			Job swap = heap[swapChild];
-			heap[swapChild] = heap[index];
-			heap[index] = swap;
-			index = swapChild;
+			// Decide which leaf to sift down
+			int swapChild = index * 2 + 1;
+			if (swapChild + 1 < jm->jobsQueued && heap[swapChild + 1].priority > heap[swapChild].priority)
+				swapChild++;
+	
+			// Sift
+			if (heap[index].priority < heap[swapChild].priority)
+			{
+				Job swap = heap[swapChild];
+				heap[swapChild] = heap[index];
+				heap[index] = swap;
+				index = swapChild;
+			}
+			else break;
 		}
-		else break;
 	}
+
+	unlockMutex(jm->heapLock);
 
 	return top;
 }
 
 // Thread procedure for a job
+#if 0
 void startJob(void *arg)
 {
 	Job *job = (Job*)arg;
 	job->jobProc(job->args);
-	atomicIncrement(&job->done);
+	//atomicIncrement(&job->done);
 }
+#endif
 
 // Process any pending jobs, assign to threads if available
+#if 0
 void processJobs()
 {
 	JobManager *jm = jobManager;
@@ -96,11 +129,13 @@ void processJobs()
 		jobsSpawned++;
 	}
 }
+#endif
 
 // Add job to job queue
 void addJob(Job job)
 {
 	JobManager *jm = jobManager;
+	lockMutex(jm->heapLock);
 	if (jm->jobsQueued >= jm->heapSize) // Grow heap
 	{
 		jm->heapSize *= 2;
@@ -124,4 +159,6 @@ void addJob(Job job)
 		}
 		else break;
 	}
+	unlockMutex(jm->heapLock);
 }
+

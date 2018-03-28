@@ -523,7 +523,7 @@ void atomicDecrement(volatile int *val)
 
 void* createMutex()
 {
-	// TODO: GROSS
+	// TODO: GROSS - avoid allocation if possible
 	LPCRITICAL_SECTION cs = (LPCRITICAL_SECTION)malloc(sizeof(CRITICAL_SECTION));
 	InitializeCriticalSection(cs);
 	return (void*)cs;

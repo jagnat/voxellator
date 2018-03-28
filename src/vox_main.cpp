@@ -43,7 +43,7 @@ void init(PlatformState *plat)
 		for (int z = 0; z < chunkSize; z++)
 			for (int y = 0; y < chunkSize; y++)
 			{
-				addPerlinChunkJob(x, y, z);
+				//addPerlinChunkJob(x, y, z);
 			}
 }
 
@@ -54,14 +54,14 @@ void buildMovementFromControls();
 void update()
 {
 	handleEvents();
-	processJobs();
+	//processJobs();
 
 	buildMovementFromControls();
 
 	setCam(sim->movement);
 
-	for (int i = 0; i < numFinishedMeshes; i++)
-		renderChunkMesh(finishedMeshes[i]);
+	//for (int i = 0; i < numFinishedMeshes; i++)
+	//	renderChunkMesh(finishedMeshes[i]);
 }
 
 void render(double updateInterval)
