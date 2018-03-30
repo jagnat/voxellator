@@ -265,6 +265,21 @@ void atomicDecrement(volatile int *val)
 	SDL_AtomicDecRef((SDL_atomic_t*)val);
 }
 
+void *createMutex()
+{
+	return SDL_CreateMutex();
+}
+
+int lockMutex(void *mutex)
+{
+	return SDL_LockMutex((SDL_mutex*)mutex);
+}
+
+int unlockMutex(void *mutex)
+{
+	return SDL_UnlockMutex((SDL_mutex*)mutex);
+}
+
 double getElapsedMs()
 {
 	return (double)SDL_GetPerformanceCounter() / sdl->timerResolution;
