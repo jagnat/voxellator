@@ -63,16 +63,15 @@ struct GenContext
 #define NUM_ALLOCATED_CHUNKS 32
 struct World
 {
-	int centerX, centerY, centerZ;
 	GenContext gen;
 	Chunk chunkList[NUM_ALLOCATED_CHUNKS];
-	Chunk *freeChunks;
+	int loadedChunks;
 	uint8 *dataBlocks;
 
 	// NEW API
 	void init(uint64 seed);
 
-	Chunk *getOrCreateChunk(int x, int y, int z);
+	Chunk* getOrCreateChunk(int x, int y, int z);
 	void unloadChunkAt(int x, int y, int z);
 };
 

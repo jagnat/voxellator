@@ -13,7 +13,7 @@ void initWorld(World *wld, uint64 seed)
 	wld->dataBlocks = (uint8*)calloc(NUM_ALLOCATED_CHUNKS, chunkDataStride);
 
 	// Init chunk free list
-	wld->freeChunks = wld->chunkList;
+	//wld->freeChunks = wld->chunkList;
 	//wld->chunkList[NUM_ALLOCATED_CHUNKS - 1].next = 0; // Might be unnecessary, because of calloc
 	for (int i = 0; i < NUM_ALLOCATED_CHUNKS - 1; i++)
 	{
@@ -26,16 +26,40 @@ void initWorld(World *wld, uint64 seed)
 
 void World::init(uint64 seed)
 {
+	gen.seed = seed;
+	gen.mode = GEN_PERL3D;
+	seedPerlin3(&gen.perlin, gen.seed);
+
+	int realSize = CHUNK_SIZE + 2;
+	int chunkStride = sizeof(uint8) * realSize * realSize * realSize;
+	dataBlocks = (uint8*)calloc(NUM_ALLOCATED_CHUNKS, chunkStride);
+
+	for (int i = 0; i < NUM_ALLOCATED_CHUNKS; i++)
+	{
+		chunkList[i].data = &dataBlocks[i * chunkStride];
+	}
+}
+
+Chunk* World::getOrCreateChunk(int x, int y, int z)
+{
+	return (Chunk*)0;
+}
+
+void World::unloadChunkAt(int x, int y, int z)
+{
 
 }
 
+#if 0
 Chunk* createEmptyChunk()
 {
 	Chunk *c = (Chunk*)calloc(1, sizeof(Chunk));
 	c->empty = true;
 	return c;
 }
+#endif
 
+#if 0
 void allocateChunkData(Chunk *chunk)
 {
 	if (chunk->data)
@@ -45,7 +69,9 @@ void allocateChunkData(Chunk *chunk)
 	chunk->data = (uint8*)calloc(1, sizeof(uint8) * realSize * realSize * realSize);
 	chunk->empty = false;
 }
+#endif
 
+#if 0
 void freeChunk(Chunk *chunk)
 {
 	if (!chunk)
@@ -57,6 +83,7 @@ void freeChunk(Chunk *chunk)
 	}
 	free(chunk);
 }
+#endif
 
 inline int chunk__3Dto1D(int x, int y, int z)
 { return (x + 1) + (CHUNK_SIZE + 2) * ((z + 1) + (y + 1) * (CHUNK_SIZE + 2)); }
@@ -80,6 +107,7 @@ void createPerlinChunkJobCompletion(void *args)
 }
 */
 
+#if 0
 void addPerlinChunkJob(int xc, int yc, int zc)
 {
 	// TODO: Pull chunk from free list instead
@@ -94,6 +122,7 @@ void addPerlinChunkJob(int xc, int yc, int zc)
 	job.args = c;
 	addJob(job);
 }
+#endif
 
 //#define USE_3D_PERLIN
 
@@ -129,6 +158,7 @@ void fillPerlinChunk(Chunk *c)
 			}
 }
 
+#if 0
 Chunk* createPerlinChunk(int xc, int yc, int zc)
 {
 	Chunk *c = createEmptyChunk();
@@ -139,6 +169,7 @@ Chunk* createPerlinChunk(int xc, int yc, int zc)
 	
 	return c;
 }
+#endif
 
 
 uint8 chunk_getBlockUnchecked(Chunk *chunk, int x, int y, int z)
