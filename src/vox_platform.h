@@ -115,6 +115,7 @@ void init(PlatformState *plat);
 void setMouseState(bool locked);
 bool getPlatformFlag(int flag);
 double getElapsedMs();
+void sleepMs(int ms);
 
 bool createThread(void (*threadProc)(void*), void *threadData);
 void atomicIncrement(volatile int *val);

@@ -20,12 +20,13 @@ struct JobManager
 
 	Job *runningJobs;
 	Job *freeJobs; // Free linked list
-	int maxThreads;
+	int maxJobs;
 	int jobsActive;
 };
 
-void initJobSystem(int maxThreads);
+void initJobSystem(int maxJobs);
 //void processJobs();
 void addJob(Job job);
 
 #endif //_VOX_JOBS_H_
+

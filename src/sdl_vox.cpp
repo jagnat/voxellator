@@ -251,7 +251,10 @@ bool createThread(void (*threadProc)(void*), void *threadArgs)
 	sdl_threadwrapper *w = (sdl_threadwrapper*)malloc(sizeof(sdl_threadwrapper));
 	w->threadProc = threadProc;
 	w->threadArgs = threadArgs;
-	SDL_CreateThread(sdl_dummyThreadProc, "test_name", w);
+	SDL_Thread *t=SDL_CreateThread(sdl_dummyThreadProc, "test_name", w);
+	if (!t)
+		return false;
+	SDL_DetachThread(t);
 	return true;
 }
 
@@ -283,6 +286,11 @@ int unlockMutex(void *mutex)
 double getElapsedMs()
 {
 	return (double)SDL_GetPerformanceCounter() / sdl->timerResolution;
+}
+
+void sleepMs(int ms)
+{
+	SDL_Delay(ms);
 }
 
 #include "vox_main.cpp"

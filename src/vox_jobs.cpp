@@ -11,16 +11,20 @@ static void jobThreadProc(void* data)
 	{
 		Job job = extractJob(jm);
 		if (!job.jobProc) // Heap was empty
+		{
+			sleepMs(1);
 			continue;
+		}
 		job.jobProc(job.args);
 	}
 }
 
-void initJobSystem(int maxThreads)
+void initJobSystem(int maxJobs)
 {
 	jobManager = (JobManager*)calloc(1, sizeof(JobManager));
 
-	jobManager->maxThreads = maxThreads;
+	jobManager->maxJobs = maxJobs;
+	printf("max threads; %d\n", maxJobs);
 	//jobManager->runningJobs = (Job*)calloc(jobManager->maxThreads, sizeof(Job));
 	//jobManager->freeJobs = jobManager->runningJobs;
 	//for (int i = 0; i < jobManager->maxThreads - 1; i++)
@@ -33,7 +37,7 @@ void initJobSystem(int maxThreads)
 	if (!jobManager->heapLock)
 		printf("Err creating heap lock\n"); // TODO: Fix
 	
-	for (int i = 0; i < jobManager->maxThreads - 1; i++)
+	for (int i = 0; i < jobManager->maxJobs; i++)
 		createThread(jobThreadProc, jobManager);
 }
 

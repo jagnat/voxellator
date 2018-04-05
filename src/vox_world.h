@@ -35,15 +35,16 @@ render()
 
 struct Chunk
 {
+	uint8 *data;
 	bool hasData;
 	bool empty;
 	int filledVoxels;
-	uint8 *data;
 	int x, y, z;
 	Color color;
+	volatile int generated;
 
 	// For free list
-	Chunk* next;
+	//Chunk* next;
 };
 
 enum GenMode
@@ -67,17 +68,23 @@ struct World
 	Chunk chunkList[NUM_ALLOCATED_CHUNKS];
 	Chunk *freeChunks;
 	uint8 *dataBlocks;
+
+	// NEW API
+	void init(uint64 seed);
+
+	Chunk *getOrCreateChunk(int x, int y, int z);
+	void unloadChunkAt(int x, int y, int z);
 };
 
-void initWorld(World *world, uint64 seed);
+//void initWorld(World *world, uint64 seed);
 
-Chunk* createEmptyChunk();
-void allocateChunkData(Chunk *chunk);
-void freeChunk(Chunk *chunk);
-void setChunkCoords(Chunk *chunk, int x, int y, int z);
+//Chunk* createEmptyChunk();
+//void allocateChunkData(Chunk *chunk);
+//void freeChunk(Chunk *chunk);
+//void setChunkCoords(Chunk *chunk, int x, int y, int z);
 
-Chunk* createPerlinChunk(int x, int y, int z);
-void fillPerlinChunk(Chunk *c);
+//Chunk* createPerlinChunk(int x, int y, int z);
+//void fillPerlinChunk(Chunk *c);
 
 void addPerlinChunkJob(int xc, int yzc, int zc);
 

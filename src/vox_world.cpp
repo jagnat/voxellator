@@ -14,14 +14,19 @@ void initWorld(World *wld, uint64 seed)
 
 	// Init chunk free list
 	wld->freeChunks = wld->chunkList;
-	wld->chunkList[NUM_ALLOCATED_CHUNKS - 1].next = 0; // Might be unnecessary, because of calloc
+	//wld->chunkList[NUM_ALLOCATED_CHUNKS - 1].next = 0; // Might be unnecessary, because of calloc
 	for (int i = 0; i < NUM_ALLOCATED_CHUNKS - 1; i++)
 	{
-		wld->chunkList[i].next = wld->chunkList + i + 1;
+		//wld->chunkList[i].next = wld->chunkList + i + 1;
 		wld->chunkList[i].data = &wld->dataBlocks[i * chunkDataStride];
 	}
 	wld->chunkList[NUM_ALLOCATED_CHUNKS - 1].data =
 		&wld->dataBlocks[(NUM_ALLOCATED_CHUNKS - 1) * chunkDataStride];
+}
+
+void World::init(uint64 seed)
+{
+
 }
 
 Chunk* createEmptyChunk()
@@ -64,14 +69,16 @@ void setChunkCoords(Chunk *chunk, int x, int y, int z)
 
 void createPerlinChunkJobProc(void *args)
 {
-	fillPerlinChunk((Chunk*)args);
+	//fillPerlinChunk((Chunk*)args);
 }
 
+/*
 void createPerlinChunkJobCompletion(void *args)
 {
 	if (!((Chunk*)args)->empty)
 		addGreedyJob((Chunk*)args);
 }
+*/
 
 void addPerlinChunkJob(int xc, int yc, int zc)
 {
