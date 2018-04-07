@@ -551,5 +551,10 @@ double getElapsedMs()
 	return count / win32->timerResolution;
 }
 
+void sleepMs(int ms)
+{
+	Sleep(ms);
+}
+
 #include "vox_main.cpp"
 
