@@ -3,32 +3,6 @@
 #define _VOX_WORLD_H_
 
 #include "vox_noise.h"
-
-#if !1
-load()
-{
-	sim->world = createWorld(/* seed, genmode, name goes here maybe*/);
-}
-
-update()
-{
-	for chunk in sim->world.loadedChunks:
-		updatesim(chunk, getEntitiesIn(chunk.coords))
-	
-	if (player->chunkPos != player->prevChunkPos)
-		sim->world.updateChunkTargets(player->chunkPos)
-	
-
-}
-
-render()
-{
-	for chunkmesh in sim->renderstate.loadedChunkMeshes
-		render(chunkmesh)
-}
-
-#endif
-
 #include "vox_platform.h"
 
 #define CHUNK_SIZE 64
@@ -37,14 +11,13 @@ struct Chunk
 {
 	uint8 *data;
 	bool hasData;
+	bool used;
 	bool empty;
 	int filledVoxels;
 	int x, y, z;
 	Color color;
-	volatile int generated;
 
-	// For free list
-	//Chunk* next;
+	volatile int generated;
 };
 
 enum GenMode
@@ -60,7 +33,7 @@ struct GenContext
 	uint64 seed;
 };
 
-#define NUM_ALLOCATED_CHUNKS 32
+#define NUM_ALLOCATED_CHUNKS 512
 struct World
 {
 	GenContext gen;

@@ -2,6 +2,7 @@
 
 #include "vox_noise.h"
 
+#if 0
 void initWorld(World *wld, uint64 seed)
 {
 	wld->gen.seed = seed;
@@ -23,6 +24,12 @@ void initWorld(World *wld, uint64 seed)
 	wld->chunkList[NUM_ALLOCATED_CHUNKS - 1].data =
 		&wld->dataBlocks[(NUM_ALLOCATED_CHUNKS - 1) * chunkDataStride];
 }
+#endif
+
+static int chunkCoordHash(int x, int y, int z)
+{
+	return (x * 8081 + y * 16703) ^ (z * 28057);
+}
 
 void World::init(uint64 seed)
 {
@@ -42,8 +49,10 @@ void World::init(uint64 seed)
 
 Chunk* World::getOrCreateChunk(int x, int y, int z)
 {
-	return (Chunk*)0;
+	int index = chunkCoordHasn(x, y, z) % NUM_ALLOCATED_CHUNKS;
+	return chunkList + index; // TODO: THIS IS BAD, fix immediately!
 }
+
 
 void World::unloadChunkAt(int x, int y, int z)
 {
