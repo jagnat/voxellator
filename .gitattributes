@@ -1,3 +1,4 @@
 *.h text eol=lf
 *.cpp text eol=lf
 *.c text eol=lf
+*.glsl text eol=lf
