@@ -85,4 +85,3 @@ float perlin3(Perlin3 *perl, float x, float y, float z)
 
 	return r / 0.866025403784f;
 }
-

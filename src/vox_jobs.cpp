@@ -65,13 +65,14 @@ static Job extractJob(JobManager *jm)
 {
 	lockMutex(jm->heapLock);
 	Job *heap = jm->jobHeap;
-	Job top = {};
+	Job top = {0};
 
 	if (jm->jobsQueued > 0)
 	{
 		top = heap[0];
-		heap[0] = heap[--jm->jobsQueued];
+		heap[0] = heap[--jm->jobsQueued]; // Replace top with last
 
+		// Sift down
 		int index = 0;
 		while (index * 2 + 1 < jm->jobsQueued)
 		{
@@ -147,11 +148,13 @@ void addJob(Job job)
 	}
 
 	Job *heap = jm->jobHeap;
-	heap[jm->jobsQueued++] = job;
+	heap[jm->jobsQueued++] = job; // Place job at end of heap
 
 	int index = jm->jobsQueued - 1;
-	if (index == 0)
+	if (index == 0) // Skip sifting if no other jobs
 		return;
+
+	// Sift up
 	while ((index - 1) / 2 >= 0)
 	{
 		int parent = (index - 1) / 2;
@@ -165,4 +168,3 @@ void addJob(Job job)
 	}
 	unlockMutex(jm->heapLock);
 }
-

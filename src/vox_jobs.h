@@ -8,7 +8,7 @@ struct Job
 	void *args;
 	//volatile int done;
 	int priority;
-	Job *next;
+	//Job *next;
 };
 
 struct JobManager
@@ -18,10 +18,7 @@ struct JobManager
 	int heapSize;
 	void *heapLock;
 
-	Job *runningJobs;
-	Job *freeJobs; // Free linked list
 	int maxJobs;
-	int jobsActive;
 };
 
 void initJobSystem(int maxJobs);
@@ -29,4 +26,3 @@ void initJobSystem(int maxJobs);
 void addJob(Job job);
 
 #endif //_VOX_JOBS_H_
-

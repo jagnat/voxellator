@@ -26,6 +26,15 @@ void initWorld(World *wld, uint64 seed)
 }
 #endif
 
+bool Chunk::coordsEqual(int x, int y, int z)
+{
+	return this->x == x && this->y == y && this->z == z;
+}
+void Chunk::setCoords(int x, int y, int z)
+{
+	this->x = x; this->y = y; this->z = z;
+}
+
 static int chunkCoordHash(int x, int y, int z)
 {
 	return (x * 8081 + y * 16703) ^ (z * 28057);
@@ -39,18 +48,83 @@ void World::init(uint64 seed)
 
 	int realSize = CHUNK_SIZE + 2;
 	int chunkStride = sizeof(uint8) * realSize * realSize * realSize;
-	dataBlocks = (uint8*)calloc(NUM_ALLOCATED_CHUNKS, chunkStride);
+	//dataBlocks = (uint8*)calloc(CHUNK_TABLE_LEN, chunkStride);
 
-	for (int i = 0; i < NUM_ALLOCATED_CHUNKS; i++)
+	for (int i = 0; i < CHUNK_TABLE_LEN; i++)
 	{
-		chunkList[i].data = &dataBlocks[i * chunkStride];
+		//chunkList[i].data = &dataBlocks[i * chunkStride];
 	}
+}
+
+int World::linearProbe(int x, int y, int z, int* firstEmpty)
+{
+	int raw = chunkCoordHash(x, y, z) % CHUNK_TABLE_LEN;
+	// Check if chunk is at first index
+	if (chunkTable[raw].used && chunkTable[raw].chunk.coordsEqual(x, y, z))
+	{
+		if (firstEmpty)
+			*firstEmpty = -1;
+		return raw;
+	}
+	int index = (raw + 1) % CHUNK_TABLE_LEN;
+	int firstEmptyIndex = -1;
+	bool found = false;
+	while (chunkTable[index].dirty && index != raw)
+	{
+		if (firstEmptyIndex == -1 && !chunkTable[index].used)
+			firstEmptyIndex = index;
+
+		if (chunkTable[index].used && chunkTable[index].chunk.coordsEqual(x, y, z))
+		{
+			found = true;
+			break;
+		}
+		index = (index + 1) % CHUNK_TABLE_LEN;
+	}
+	// Exiting from here cases:
+	// 1. chunk found
+	// 2. no chunk found
+	//   a. empty index found
+	//   b. no empty index found
+	//     i. reached starting point
+	//     ii. current index is empty
+
+	int res = -1;
+	if (found)
+		res = index;
+	else
+		if (firstEmptyIndex == -1)
+			if (index != raw)
+				firstEmptyIndex = index;
+
+	if (firstEmpty)
+		*firstEmpty = firstEmptyIndex;
+
+	return res;
 }
 
 Chunk* World::getOrCreateChunk(int x, int y, int z)
 {
-	int index = chunkCoordHasn(x, y, z) % NUM_ALLOCATED_CHUNKS;
-	return chunkList + index; // TODO: THIS IS BAD, fix immediately!
+	int firstEmptyIndex = -1;
+	int index = linearProbe(x, y, z, &firstEmptyIndex);
+
+	if (index != -1)
+		return &chunkTable[index].chunk;
+
+	if (firstEmptyIndex == -1)
+	{
+		printf("Error: Chunk table out of space!\n");
+		return 0;
+	}
+
+	memset(&chunkTable[firstEmptyIndex].chunk, 0, sizeof(Chunk));
+	chunkTable[firstEmptyIndex].chunk.setCoords(x, y, z);
+	addPerlinChunkJob(&chunkTable[firstEmptyIndex].chunk);
+
+	chunkTable[firstEmptyIndex].dirty = true;
+	chunkTable[firstEmptyIndex].used = true;
+
+	return &chunkTable[firstEmptyIndex].chunk;
 }
 
 
@@ -59,16 +133,6 @@ void World::unloadChunkAt(int x, int y, int z)
 
 }
 
-#if 0
-Chunk* createEmptyChunk()
-{
-	Chunk *c = (Chunk*)calloc(1, sizeof(Chunk));
-	c->empty = true;
-	return c;
-}
-#endif
-
-#if 0
 void allocateChunkData(Chunk *chunk)
 {
 	if (chunk->data)
@@ -78,7 +142,6 @@ void allocateChunkData(Chunk *chunk)
 	chunk->data = (uint8*)calloc(1, sizeof(uint8) * realSize * realSize * realSize);
 	chunk->empty = false;
 }
-#endif
 
 #if 0
 void freeChunk(Chunk *chunk)
@@ -100,9 +163,6 @@ inline int chunk__3Dto1D(int x, int y, int z)
 inline bool chunk__inChunk(int x, int y, int z)
 { return x >= 0 && x < CHUNK_SIZE && y >= 0 && y < CHUNK_SIZE && z >= 0 && z < CHUNK_SIZE; }
 
-void setChunkCoords(Chunk *chunk, int x, int y, int z)
-{ chunk->x = x; chunk->y = y; chunk->z = z; }
-
 void createPerlinChunkJobProc(void *args)
 {
 	//fillPerlinChunk((Chunk*)args);
@@ -116,22 +176,18 @@ void createPerlinChunkJobCompletion(void *args)
 }
 */
 
-#if 0
-void addPerlinChunkJob(int xc, int yc, int zc)
+void addPerlinChunkJob(Chunk *c)
 {
 	// TODO: Pull chunk from free list instead
-	Chunk *c = createEmptyChunk();
 	Color col = {80, 50, 100, 255};
 	c->color = col;
 	allocateChunkData(c);
-	setChunkCoords(c, xc, yc, zc);
 	Job job = {};
 	job.jobProc = createPerlinChunkJobProc;
 	//job.completionProc = createPerlinChunkJobCompletion;
 	job.args = c;
 	addJob(job);
 }
-#endif
 
 //#define USE_3D_PERLIN
 

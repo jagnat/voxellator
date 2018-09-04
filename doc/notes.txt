@@ -1,0 +1,4 @@
+This file contains notes that I write before attempting something.
+
+How the world system will work
+hash map of chunks

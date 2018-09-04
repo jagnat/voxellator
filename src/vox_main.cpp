@@ -21,6 +21,11 @@ SimState *sim;
 const int chunkSize = 4;
 const int numChunks = chunkSize * chunkSize * chunkSize;
 
+void testJob(void* data)
+{
+	
+}
+
 void init(PlatformState *plat)
 {
 	platform = plat;
@@ -31,7 +36,6 @@ void init(PlatformState *plat)
 	sim->movement.yaw = M_PI + M_PI / 4;
 	sim->movement.pitch = -M_PI / 5;
 
-	//initWorld(&sim->world, 49839594734698ul);
 	sim->world.init(49839594734698ul);
 
 	initJobSystem(platform->info.logicalCores - 1);
