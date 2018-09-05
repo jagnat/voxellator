@@ -1,4 +1,9 @@
 This file contains notes that I write before attempting something.
 
 How the world system will work
-hash map of chunks
+hash map for chunk storage
+chunks generated on jobs, check if done once per frame
+
+still need to work out how meshing system and world will interact
+
+I would also like to work on some generic data structures to use soon.

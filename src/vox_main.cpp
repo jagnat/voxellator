@@ -18,13 +18,8 @@
 PlatformState *platform;
 SimState *sim;
 
-const int chunkSize = 4;
+const int chunkSize = 1;
 const int numChunks = chunkSize * chunkSize * chunkSize;
-
-void testJob(void* data)
-{
-	
-}
 
 void init(PlatformState *plat)
 {
@@ -48,7 +43,7 @@ void init(PlatformState *plat)
 		for (int z = 0; z < chunkSize; z++)
 			for (int y = 0; y < chunkSize; y++)
 			{
-				//addPerlinChunkJob(x, y, z);
+				sim->world.getOrCreateChunk(x, y, z);
 			}
 }
 
@@ -64,8 +59,15 @@ void update()
 
 	setCam(sim->movement);
 
-	//for (int i = 0; i < numFinishedMeshes; i++)
-	//	renderChunkMesh(finishedMeshes[i]);
+	sim->world.update();
+
+	for (int i = 0; i < numFinishedMeshes; i++)
+	{
+		if (finishedMeshes[i]->doneMeshing)
+		{
+			renderChunkMesh(finishedMeshes[i]);
+		}
+	}
 }
 
 void render(double updateInterval)

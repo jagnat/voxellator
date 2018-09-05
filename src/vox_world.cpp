@@ -56,6 +56,19 @@ void World::init(uint64 seed)
 	}
 }
 
+void World::update()
+{
+	for (int i = 0; i < CHUNK_TABLE_LEN; i++)
+	{
+		Chunk *c = &chunkTable[i].chunk;
+		if (chunkTable[i].used && c->generated && !c->hasMesh)
+		{
+			c->hasMesh = true;
+			addGreedyJob(c);
+		}
+	}
+}
+
 int World::linearProbe(int x, int y, int z, int* firstEmpty)
 {
 	int raw = chunkCoordHash(x, y, z) % CHUNK_TABLE_LEN;
@@ -105,8 +118,11 @@ int World::linearProbe(int x, int y, int z, int* firstEmpty)
 
 Chunk* World::getOrCreateChunk(int x, int y, int z)
 {
+	printf("workin' on chunk (%d, %d, %d)...\n", x, y, z);
 	int firstEmptyIndex = -1;
 	int index = linearProbe(x, y, z, &firstEmptyIndex);
+
+	printf("Got an index of %d\n", index);
 
 	if (index != -1)
 		return &chunkTable[index].chunk;
@@ -119,6 +135,7 @@ Chunk* World::getOrCreateChunk(int x, int y, int z)
 
 	memset(&chunkTable[firstEmptyIndex].chunk, 0, sizeof(Chunk));
 	chunkTable[firstEmptyIndex].chunk.setCoords(x, y, z);
+
 	addPerlinChunkJob(&chunkTable[firstEmptyIndex].chunk);
 
 	chunkTable[firstEmptyIndex].dirty = true;
@@ -126,7 +143,6 @@ Chunk* World::getOrCreateChunk(int x, int y, int z)
 
 	return &chunkTable[firstEmptyIndex].chunk;
 }
-
 
 void World::unloadChunkAt(int x, int y, int z)
 {
@@ -163,9 +179,11 @@ inline int chunk__3Dto1D(int x, int y, int z)
 inline bool chunk__inChunk(int x, int y, int z)
 { return x >= 0 && x < CHUNK_SIZE && y >= 0 && y < CHUNK_SIZE && z >= 0 && z < CHUNK_SIZE; }
 
+void fillPerlinChunk(Chunk *c);
+
 void createPerlinChunkJobProc(void *args)
 {
-	//fillPerlinChunk((Chunk*)args);
+	fillPerlinChunk((Chunk*)args);
 }
 
 /*
@@ -178,13 +196,13 @@ void createPerlinChunkJobCompletion(void *args)
 
 void addPerlinChunkJob(Chunk *c)
 {
-	// TODO: Pull chunk from free list instead
 	Color col = {80, 50, 100, 255};
 	c->color = col;
 	allocateChunkData(c);
 	Job job = {};
 	job.jobProc = createPerlinChunkJobProc;
 	//job.completionProc = createPerlinChunkJobCompletion;
+	job.priority = 100;
 	job.args = c;
 	addJob(job);
 }
@@ -193,6 +211,7 @@ void addPerlinChunkJob(Chunk *c)
 
 void fillPerlinChunk(Chunk *c)
 {
+	printf("Successfully getting here...\n");
 	// TODO: DON'T DO THIS EVERY CHUNK
 	Perlin3 perl;
 	seedPerlin3(&perl, 420895928332);
@@ -221,6 +240,8 @@ void fillPerlinChunk(Chunk *c)
 				}
 #endif
 			}
+
+	c->generated = 1;
 }
 
 #if 0
@@ -257,4 +278,3 @@ void chunk_setBlockChecked(Chunk *chunk, uint8 val, int x, int y, int z)
 		return;
 	chunk->data[chunk__3Dto1D(x, y, z)] = val;
 }
-

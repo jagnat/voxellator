@@ -205,15 +205,18 @@ void meshVanillaGreedyJobProc(void *args)
 {
 	MeshJobArgs *casted = (MeshJobArgs*)args;
 	meshVanillaGreedy(casted->chunk, casted->mesh);
+	casted->mesh->doneMeshing = 1;
 }
 
 void addGreedyJob(Chunk *chunk)
 {
+	printf("Getting here...\n");
 	if (chunk->empty)
 		return;
 	MeshJobArgs *args = (MeshJobArgs*)malloc(sizeof(MeshJobArgs));
 	args->chunk = chunk;
 	args->mesh = createChunkMesh();
+	finishedMeshes[numFinishedMeshes++] = args->mesh;
 	Job job = {0};
 	job.jobProc = meshVanillaGreedyJobProc;
 	//job.completionProc = meshVanillaGreedyJobCompletion;
@@ -244,7 +247,7 @@ void greedy_setV(VertexColorNormal10 *vert, int dim, int16 i, int16 j, int16 k)
 
 void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 {
-//#define GREEDY_PRINT_TIME
+#define GREEDY_PRINT_TIME
 #ifdef GREEDY_PRINT_TIME
 	double startTime = getElapsedMs();
 #endif

@@ -70,7 +70,7 @@ static Job extractJob(JobManager *jm)
 	if (jm->jobsQueued > 0)
 	{
 		top = heap[0];
-		heap[0] = heap[--jm->jobsQueued]; // Replace top with last
+		heap[0] = heap[--(jm->jobsQueued)]; // Replace top with last
 
 		// Sift down
 		int index = 0;

@@ -50,6 +50,8 @@ struct ChunkMesh
 			uint vboId, iboId, vaoId;
 		};
 	};
+
+	volatile int doneMeshing;
 };
 
 enum ShaderType

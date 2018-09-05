@@ -10,12 +10,14 @@
 struct Chunk
 {
 	uint8 *data;
-	bool hasData;
-	bool used;
+	//bool hasData;
+	//bool used;
 	bool empty;
 	int filledVoxels;
 	int x, y, z;
 	Color color;
+
+	bool hasMesh;
 
 	volatile int generated;
 
@@ -43,15 +45,15 @@ struct ChunkEntry
 	bool used; // Chunk is currently in use
 };
 
-#define CHUNK_TABLE_LEN 512
+#define CHUNK_TABLE_LEN 128
 struct World
 {
 	GenContext gen;
 	ChunkEntry chunkTable[CHUNK_TABLE_LEN] = {};
-	int loadedChunks;
 
 	// NEW API
 	void init(uint64 seed);
+	void update();
 
 	Chunk* getOrCreateChunk(int x, int y, int z);
 	void unloadChunkAt(int x, int y, int z);
