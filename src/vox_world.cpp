@@ -48,12 +48,12 @@ void World::init(uint64 seed)
 
 	int realSize = CHUNK_SIZE + 2;
 	int chunkStride = sizeof(uint8) * realSize * realSize * realSize;
-	//dataBlocks = (uint8*)calloc(CHUNK_TABLE_LEN, chunkStride);
-
+#if 0
 	for (int i = 0; i < CHUNK_TABLE_LEN; i++)
 	{
 		//chunkList[i].data = &dataBlocks[i * chunkStride];
 	}
+#endif
 }
 
 void World::update()
@@ -118,11 +118,8 @@ int World::linearProbe(int x, int y, int z, int* firstEmpty)
 
 Chunk* World::getOrCreateChunk(int x, int y, int z)
 {
-	printf("workin' on chunk (%d, %d, %d)...\n", x, y, z);
 	int firstEmptyIndex = -1;
 	int index = linearProbe(x, y, z, &firstEmptyIndex);
-
-	printf("Got an index of %d\n", index);
 
 	if (index != -1)
 		return &chunkTable[index].chunk;
@@ -186,14 +183,6 @@ void createPerlinChunkJobProc(void *args)
 	fillPerlinChunk((Chunk*)args);
 }
 
-/*
-void createPerlinChunkJobCompletion(void *args)
-{
-	if (!((Chunk*)args)->empty)
-		addGreedyJob((Chunk*)args);
-}
-*/
-
 void addPerlinChunkJob(Chunk *c)
 {
 	Color col = {80, 50, 100, 255};
@@ -211,7 +200,6 @@ void addPerlinChunkJob(Chunk *c)
 
 void fillPerlinChunk(Chunk *c)
 {
-	printf("Successfully getting here...\n");
 	// TODO: DON'T DO THIS EVERY CHUNK
 	Perlin3 perl;
 	seedPerlin3(&perl, 420895928332);

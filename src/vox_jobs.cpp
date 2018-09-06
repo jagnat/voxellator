@@ -24,11 +24,7 @@ void initJobSystem(int maxJobs)
 	jobManager = (JobManager*)calloc(1, sizeof(JobManager));
 
 	jobManager->maxJobs = maxJobs;
-	printf("max threads; %d\n", maxJobs);
-	//jobManager->runningJobs = (Job*)calloc(jobManager->maxThreads, sizeof(Job));
-	//jobManager->freeJobs = jobManager->runningJobs;
-	//for (int i = 0; i < jobManager->maxThreads - 1; i++)
-	//	jobManager->runningJobs[i].next = jobManager->runningJobs + i + 1;
+	printf("max threads: %d\n", maxJobs);
 
 	jobManager->heapSize = 1024;
 	jobManager->jobsQueued = 0;
@@ -38,27 +34,12 @@ void initJobSystem(int maxJobs)
 		printf("Err creating heap lock\n"); // TODO: Fix
 	
 	for (int i = 0; i < jobManager->maxJobs; i++)
-		createThread(jobThreadProc, jobManager);
-}
-
-// Free any slots for threads that are done
-#if 0
-static void freeThreads(JobManager *jm)
-{
-	for (int i = 0; i < jm->maxThreads; i++)
 	{
-		if (jm->runningJobs[i].done)
-		{
-			jm->runningJobs[i].completionProc(jm->runningJobs[i].args);
-
-			jm->runningJobs[i] = {0};
-			jm->runningJobs[i].next = jm->freeJobs;
-			jm->freeJobs = jm->runningJobs + i;
-			jm->jobsActive--;
-		}
+		bool r = createThread(jobThreadProc, jobManager);
+		if (!r)
+			printf("Failed to create thread!\n");
 	}
 }
-#endif
 
 // Extract top job from heap
 static Job extractJob(JobManager *jm)
@@ -70,7 +51,8 @@ static Job extractJob(JobManager *jm)
 	if (jm->jobsQueued > 0)
 	{
 		top = heap[0];
-		heap[0] = heap[--(jm->jobsQueued)]; // Replace top with last
+		jm->jobsQueued--;
+		heap[0] = heap[jm->jobsQueued]; // Replace top with last
 
 		// Sift down
 		int index = 0;
@@ -152,7 +134,10 @@ void addJob(Job job)
 
 	int index = jm->jobsQueued - 1;
 	if (index == 0) // Skip sifting if no other jobs
+	{
+		unlockMutex(jm->heapLock);
 		return;
+	}
 
 	// Sift up
 	while ((index - 1) / 2 >= 0)
@@ -168,3 +153,4 @@ void addJob(Job job)
 	}
 	unlockMutex(jm->heapLock);
 }
+

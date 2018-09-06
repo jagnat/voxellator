@@ -210,7 +210,6 @@ void meshVanillaGreedyJobProc(void *args)
 
 void addGreedyJob(Chunk *chunk)
 {
-	printf("Getting here...\n");
 	if (chunk->empty)
 		return;
 	MeshJobArgs *args = (MeshJobArgs*)malloc(sizeof(MeshJobArgs));
@@ -221,7 +220,7 @@ void addGreedyJob(Chunk *chunk)
 	job.jobProc = meshVanillaGreedyJobProc;
 	//job.completionProc = meshVanillaGreedyJobCompletion;
 	job.args = args;
-	job.priority = 100;
+	job.priority = 200;
 	addJob(job);
 }
 
