@@ -133,6 +133,7 @@ Chunk* World::getOrCreateChunk(int x, int y, int z)
 	memset(&chunkTable[firstEmptyIndex].chunk, 0, sizeof(Chunk));
 	chunkTable[firstEmptyIndex].chunk.setCoords(x, y, z);
 
+	addChunkToList(&loadingChunks, &chunkTable[firstEmptyIndex]);
 	addPerlinChunkJob(&chunkTable[firstEmptyIndex].chunk);
 
 	chunkTable[firstEmptyIndex].dirty = true;
@@ -154,6 +155,35 @@ void allocateChunkData(Chunk *chunk)
 	int realSize = CHUNK_SIZE + 2;
 	chunk->data = (uint8*)calloc(1, sizeof(uint8) * realSize * realSize * realSize);
 	chunk->empty = false;
+}
+
+void World::addChunkToList(ChunkEntry **list, ChunkEntry *entry)
+{
+	ChunkEntry *p = *list;
+	if (!p)
+	{
+		*list = entry;
+		entry->next = 0;
+		entry->prev = 0;
+		return;
+	}
+
+	p->prev = entry;
+	entry->next = p;
+	*list = entry;
+}
+
+void World::removeChunkFromList(ChunkEntry **list, ChunkEntry *entry)
+{
+	if (entry == *list)
+	{
+		*list = entry->next;
+		return;
+	}
+	if (entry->prev)
+		entry->prev->next = entry->next;
+	if (entry->next)
+		entry->next->prev = entry->prev;
 }
 
 #if 0
@@ -221,6 +251,7 @@ void fillPerlinChunk(Chunk *c)
 				float p = perlin3(&perl, (xc + x) / 30.0, 298.3219f, (zc + z) / 30.0);
 				p = (p + 1) / 2;
 				if ((double)((yc + y) / 120.0f) < p)
+				// if (1)
 				{
 					chunk_setBlockUnchecked(c, 255, x, y, z);
 					if (chunk__inChunk(x, y, z))

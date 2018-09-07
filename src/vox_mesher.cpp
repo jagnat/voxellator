@@ -205,7 +205,7 @@ void meshVanillaGreedyJobProc(void *args)
 {
 	MeshJobArgs *casted = (MeshJobArgs*)args;
 	meshVanillaGreedy(casted->chunk, casted->mesh);
-	casted->mesh->doneMeshing = 1;
+	// casted->mesh->doneMeshing = 1;
 }
 
 void addGreedyJob(Chunk *chunk)

@@ -57,9 +57,9 @@ void update()
 
 	buildMovementFromControls();
 
-	setCam(sim->movement);
-
 	sim->world.update();
+
+	setCam(sim->movement);
 
 	for (int i = 0; i < numFinishedMeshes; i++)
 	{

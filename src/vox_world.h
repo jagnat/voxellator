@@ -43,6 +43,7 @@ struct ChunkEntry
 	Chunk chunk;
 	bool dirty; // Chunk has been used
 	bool used; // Chunk is currently in use
+	ChunkEntry *next, *prev;
 };
 
 #define CHUNK_TABLE_LEN 128
@@ -50,6 +51,9 @@ struct World
 {
 	GenContext gen;
 	ChunkEntry chunkTable[CHUNK_TABLE_LEN] = {};
+
+	ChunkEntry *loadingChunks;
+	ChunkEntry *loadedChunks;
 
 	// NEW API
 	void init(uint64 seed);
@@ -60,17 +64,20 @@ struct World
 
 private:
 	int linearProbe(int x, int y, int z, int* firstEmpty);
+
+	void addChunkToList(ChunkEntry **list, ChunkEntry *entry);
+	void removeChunkFromList(ChunkEntry **list, ChunkEntry *entry);
 };
 
 //void initWorld(World *world, uint64 seed);
 
 //Chunk* createEmptyChunk();
-//void allocateChunkData(Chunk *chunk);
+void allocateChunkData(Chunk *chunk);
 //void freeChunk(Chunk *chunk);
 //void setChunkCoords(Chunk *chunk, int x, int y, int z);
 
 //Chunk* createPerlinChunk(int x, int y, int z);
-//void fillPerlinChunk(Chunk *c);
+void fillPerlinChunk(Chunk *c);
 
 void addPerlinChunkJob(Chunk *c);
 
