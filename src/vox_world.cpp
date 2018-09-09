@@ -58,13 +58,16 @@ void World::init(uint64 seed)
 
 void World::update()
 {
-	for (int i = 0; i < CHUNK_TABLE_LEN; i++)
+	ChunkEntry *loadingPtr = loadingChunks;
+	while (loadingPtr)
 	{
-		Chunk *c = &chunkTable[i].chunk;
-		if (chunkTable[i].used && c->generated && !c->hasMesh)
+		ChunkEntry *current = loadingPtr;
+		loadingPtr = loadingPtr->next;
+		if (current->chunk.generated)
 		{
-			c->hasMesh = true;
-			addGreedyJob(c);
+			addGreedyJob(&current->chunk);
+			removeChunkFromList(&loadingChunks, current);
+			addChunkToList(&loadedChunks, current);
 		}
 	}
 }
