@@ -6,7 +6,8 @@
 
 #include "vox_noise.h"
 
-//#include <stdlib.h>
+#define CHUNK_RANGE_BITS 5
+#define CHUNKMESH_ARRAY_SIZE (1 << CHUNK_RANGE_BITS)
 
 typedef struct
 {
@@ -15,6 +16,8 @@ typedef struct
 	JMat4 projMatrix;
 	JMat4 viewMatrix;
 	int viewLoc, projLoc, modelLoc;
+
+	ChunkMesh* chunk_meshes[CHUNKMESH_ARRAY_SIZE][CHUNKMESH_ARRAY_SIZE][CHUNKMESH_ARRAY_SIZE];
 } RenderState;
 
 RenderState ___rs = {0};

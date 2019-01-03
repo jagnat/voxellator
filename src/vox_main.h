@@ -32,4 +32,3 @@ struct SimState
 };
 
 #endif // _VOX_MAIN_C_
-

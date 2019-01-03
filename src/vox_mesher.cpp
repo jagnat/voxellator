@@ -99,6 +99,9 @@ void addCube(MeshBuildContext *context)
 
 void setModelMatrix(Chunk *chunk, ChunkMesh *mesh)
 {
+	mesh->x = chunk->x;
+	mesh->y = chunk->y;
+	mesh->z = chunk->z;
 	mesh->modelMatrix = JMat4_Translate(chunk->x * CHUNK_SIZE, chunk->y * CHUNK_SIZE, chunk->z * CHUNK_SIZE);
 }
 
@@ -172,8 +175,6 @@ void meshVanillaCull(Chunk *chunk, ChunkMesh *mesh)
 						addFace(5, &context);
 				}
 			}
-	
-	setModelMatrix(chunk, mesh);
 
 	mesh->vertices = vertices;
 
@@ -193,6 +194,7 @@ struct MeshJobArgs
 	ChunkMesh *mesh;
 };
 
+/*
 void meshVanillaGreedyJobCompletion(void *args)
 {
 	MeshJobArgs *real = (MeshJobArgs*)args;
@@ -200,6 +202,7 @@ void meshVanillaGreedyJobCompletion(void *args)
 	finishedMeshes[numFinishedMeshes++] = real->mesh;
 	free(args);
 }
+*/
 
 void meshVanillaGreedyJobProc(void *args)
 {
@@ -215,10 +218,9 @@ void addGreedyJob(Chunk *chunk)
 	MeshJobArgs *args = (MeshJobArgs*)malloc(sizeof(MeshJobArgs));
 	args->chunk = chunk;
 	args->mesh = createChunkMesh();
-	finishedMeshes[numFinishedMeshes++] = args->mesh;
+	setModelMatrix(chunk, args->mesh);
 	Job job = {0};
 	job.jobProc = meshVanillaGreedyJobProc;
-	//job.completionProc = meshVanillaGreedyJobCompletion;
 	job.args = args;
 	job.priority = 200;
 	addJob(job);

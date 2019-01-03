@@ -264,6 +264,8 @@ void fillPerlinChunk(Chunk *c)
 			}
 
 	c->generated = 1;
+	if (c->filledVoxels == 0)
+		c->empty = true;
 }
 
 #if 0

@@ -18,7 +18,7 @@
 PlatformState *platform;
 SimState *sim;
 
-const int chunkSize = 1;
+const int chunkSize = 3;
 const int numChunks = chunkSize * chunkSize * chunkSize;
 
 void init(PlatformState *plat)
@@ -37,7 +37,7 @@ void init(PlatformState *plat)
 
 	initRender();
 
-	finishedMeshes = (ChunkMesh**)calloc(numChunks, sizeof(ChunkMesh*));
+	//finishedMeshes = (ChunkMesh**)calloc(numChunks, sizeof(ChunkMesh*));
 
 	for (int x = 0; x < chunkSize; x++)
 		for (int z = 0; z < chunkSize; z++)
@@ -61,6 +61,7 @@ void update()
 
 	setCam(sim->movement);
 
+#if 0
 	for (int i = 0; i < numFinishedMeshes; i++)
 	{
 		if (finishedMeshes[i]->doneMeshing)
@@ -68,6 +69,8 @@ void update()
 			renderChunkMesh(finishedMeshes[i]);
 		}
 	}
+#endif
+
 }
 
 void render(double updateInterval)

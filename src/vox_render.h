@@ -6,8 +6,6 @@
 
 #include "thirdparty/j_threedee.h"
 
-struct Mesh;
-
 struct VertexColorNormal10
 {
 	union
@@ -39,6 +37,7 @@ struct ChunkMesh
 	int numIndices;
 	uint *indices;
 
+	int x, y, z;
 	JMat4 modelMatrix;
 
 	// TODO: Sub-struct this, decouple from OpenGL
