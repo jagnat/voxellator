@@ -37,8 +37,9 @@ struct ChunkMesh
 	int numIndices;
 	uint *indices;
 
-	int x, y, z;
 	JMat4 modelMatrix;
+
+	int uploaded;
 
 	// TODO: Sub-struct this, decouple from OpenGL
 	union
@@ -49,8 +50,6 @@ struct ChunkMesh
 			uint vboId, iboId, vaoId;
 		};
 	};
-
-	volatile int doneMeshing;
 };
 
 enum ShaderType

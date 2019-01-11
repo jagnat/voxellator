@@ -71,6 +71,13 @@ void update()
 	}
 #endif
 
+	ChunkEntry *entry = sim->world.loadedChunks;
+	while (entry)
+	{
+		if (entry->chunk.hasMesh)
+			renderChunkMesh(entry->chunk.mesh);
+		entry = entry->next;
+	}
 }
 
 void render(double updateInterval)

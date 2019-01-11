@@ -97,18 +97,17 @@ void addCube(MeshBuildContext *context)
 	}
 }
 
-void setModelMatrix(Chunk *chunk, ChunkMesh *mesh)
+void setModelMatrix(Chunk *chunk)
 {
-	mesh->x = chunk->x;
-	mesh->y = chunk->y;
-	mesh->z = chunk->z;
+	ChunkMesh *mesh = chunk->mesh;
 	mesh->modelMatrix = JMat4_Translate(chunk->x * CHUNK_SIZE, chunk->y * CHUNK_SIZE, chunk->z * CHUNK_SIZE);
 }
 
-void meshVanillaNaive(Chunk *chunk, ChunkMesh *mesh)
+void meshVanillaNaive(Chunk *chunk)
 {
+	ChunkMesh *mesh = chunk->mesh;
 	mesh->vertices = (VertexColorNormal10*)malloc(chunk->filledVoxels * 24 * sizeof(VertexColorNormal10));
-	setModelMatrix(chunk, mesh);
+	setModelMatrix(chunk);
 
 	mesh->indexMode = INDEX_QUADS;
 	mesh->usedVertices = chunk->filledVoxels * 24;
@@ -197,31 +196,27 @@ struct MeshJobArgs
 /*
 void meshVanillaGreedyJobCompletion(void *args)
 {
-	MeshJobArgs *real = (MeshJobArgs*)args;
-	uploadChunkMesh(real->mesh);
+	Chunk *chunk = (Chunk*)args;
+	uploadChunkMesh(chunk->mesh);
 	finishedMeshes[numFinishedMeshes++] = real->mesh;
-	free(args);
 }
 */
 
 void meshVanillaGreedyJobProc(void *args)
 {
-	MeshJobArgs *casted = (MeshJobArgs*)args;
-	meshVanillaGreedy(casted->chunk, casted->mesh);
-	// casted->mesh->doneMeshing = 1;
+	meshVanillaGreedy((Chunk*)args);
+	((Chunk*)args)->hasMesh = 1;
 }
 
 void addGreedyJob(Chunk *chunk)
 {
 	if (chunk->empty)
 		return;
-	MeshJobArgs *args = (MeshJobArgs*)malloc(sizeof(MeshJobArgs));
-	args->chunk = chunk;
-	args->mesh = createChunkMesh();
-	setModelMatrix(chunk, args->mesh);
+	chunk->mesh = createChunkMesh();
+	setModelMatrix(chunk);
 	Job job = {0};
 	job.jobProc = meshVanillaGreedyJobProc;
-	job.args = args;
+	job.args = chunk;
 	job.priority = 200;
 	addJob(job);
 }
@@ -246,12 +241,14 @@ void greedy_setV(VertexColorNormal10 *vert, int dim, int16 i, int16 j, int16 k)
 	vert->w=0;
 }
 
-void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
+void meshVanillaGreedy(Chunk *chunk)
 {
 #define GREEDY_PRINT_TIME
 #ifdef GREEDY_PRINT_TIME
 	double startTime = getElapsedMs();
 #endif
+
+	ChunkMesh *mesh = chunk->mesh;
 
 	// Dynamic buffer for vertices
 	int vertCap = 16, vertLen = 0;
@@ -353,7 +350,7 @@ void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh)
 		}
 	}
 
-	setModelMatrix(chunk, mesh);
+	setModelMatrix(chunk);
 	mesh->vertices = vertices;
 	mesh->indexMode = INDEX_QUADS;
 	

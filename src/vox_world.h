@@ -7,17 +7,18 @@
 
 #define CHUNK_SIZE 64
 
+struct ChunkMesh;
+
 struct Chunk
 {
 	uint8 *data;
-	//bool hasData;
-	//bool used;
 	bool empty;
 	int filledVoxels;
 	int x, y, z;
 	Color color;
 
 	bool hasMesh;
+	ChunkMesh *mesh;
 
 	volatile int generated;
 

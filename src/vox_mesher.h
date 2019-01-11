@@ -5,9 +5,9 @@
 #include "vox_render.h"
 #include "vox_world.h"
 
-void meshVanillaNaive(Chunk *chunk, ChunkMesh *mesh);
-void meshVanillaCull(Chunk *chunk, ChunkMesh *mesh);
-void meshVanillaGreedy(Chunk *chunk, ChunkMesh *mesh);
+void meshVanillaNaive(Chunk *chunk);
+void meshVanillaCull(Chunk *chunk);
+void meshVanillaGreedy(Chunk *chunk);
 void addGreedyJob(Chunk *chunk);
 
 #endif // _VOX_MESHER_H_

@@ -1,4 +1,5 @@
 #include "vox_world.h"
+#include "vox_render.h"
 
 #include "vox_noise.h"
 

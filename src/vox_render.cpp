@@ -1,7 +1,11 @@
 #include "vox_render.h"
 
 #include <GL/gl.h>
+
+#if !(defined(__glext_h_) || defined(__gl_glext_h_))
 #include "thirdparty/glext.h"
+#endif
+
 #include "thirdparty/j_threedee.h"
 
 #include "vox_noise.h"
@@ -16,8 +20,6 @@ typedef struct
 	JMat4 projMatrix;
 	JMat4 viewMatrix;
 	int viewLoc, projLoc, modelLoc;
-
-	ChunkMesh* chunk_meshes[CHUNKMESH_ARRAY_SIZE][CHUNKMESH_ARRAY_SIZE][CHUNKMESH_ARRAY_SIZE];
 } RenderState;
 
 RenderState ___rs = {0};
@@ -163,6 +165,17 @@ void uploadChunkMesh(ChunkMesh *mesh)
 // TODO: Add local transform uniform update
 void renderChunkMesh(ChunkMesh *mesh)
 {
+	if (!mesh)
+	{
+		return;
+	}
+
+	if (!mesh->uploaded)
+	{
+		uploadChunkMesh(mesh);
+		mesh->uploaded = 1;
+	}
+
 	glUniformMatrix4fv(renderer->modelLoc, 1, false, mesh->modelMatrix.flat);
 
 	glBindVertexArray(mesh->vaoId);
