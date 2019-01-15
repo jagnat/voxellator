@@ -14,12 +14,8 @@ void initWorld(World *wld, uint64 seed)
 	int chunkDataStride = sizeof(uint8) * realSize * realSize * realSize;
 	wld->dataBlocks = (uint8*)calloc(NUM_ALLOCATED_CHUNKS, chunkDataStride);
 
-	// Init chunk free list
-	//wld->freeChunks = wld->chunkList;
-	//wld->chunkList[NUM_ALLOCATED_CHUNKS - 1].next = 0; // Might be unnecessary, because of calloc
 	for (int i = 0; i < NUM_ALLOCATED_CHUNKS - 1; i++)
 	{
-		//wld->chunkList[i].next = wld->chunkList + i + 1;
 		wld->chunkList[i].data = &wld->dataBlocks[i * chunkDataStride];
 	}
 	wld->chunkList[NUM_ALLOCATED_CHUNKS - 1].data =
@@ -49,17 +45,12 @@ void World::init(uint64 seed)
 
 	int realSize = CHUNK_SIZE + 2;
 	int chunkStride = sizeof(uint8) * realSize * realSize * realSize;
-#if 0
-	for (int i = 0; i < CHUNK_TABLE_LEN; i++)
-	{
-		//chunkList[i].data = &dataBlocks[i * chunkStride];
-	}
-#endif
 }
 
 void World::update()
 {
 	ChunkEntry *loadingPtr = loadingChunks;
+	// Iterate through currently loading chunks
 	while (loadingPtr)
 	{
 		ChunkEntry *current = loadingPtr;
@@ -83,6 +74,7 @@ int World::linearProbe(int x, int y, int z, int* firstEmpty)
 			*firstEmpty = -1;
 		return raw;
 	}
+
 	int index = (raw + 1) % CHUNK_TABLE_LEN;
 	int firstEmptyIndex = -1;
 	bool found = false;
@@ -148,7 +140,18 @@ Chunk* World::getOrCreateChunk(int x, int y, int z)
 
 void World::unloadChunkAt(int x, int y, int z)
 {
+	int index = linearProbe(x, y, z, NULL);
+	if (index == -1)
+		return;
 
+	chunkTable[index].used = false;
+	if (!chunkTable[index].chunk.empty)
+	{
+		free(chunkTable[index].chunk.data);
+	}
+
+	removeChunkFromList(&loadingChunks, chunkTable + index);
+	removeChunkFromList(&loadedChunks, chunkTable + index);
 }
 
 void allocateChunkData(Chunk *chunk)
@@ -189,20 +192,6 @@ void World::removeChunkFromList(ChunkEntry **list, ChunkEntry *entry)
 	if (entry->next)
 		entry->next->prev = entry->prev;
 }
-
-#if 0
-void freeChunk(Chunk *chunk)
-{
-	if (!chunk)
-		return;
-	if (!chunk->empty)
-	{
-		free(chunk->data);
-		chunk->data = (uint8*)0;
-	}
-	free(chunk);
-}
-#endif
 
 inline int chunk__3Dto1D(int x, int y, int z)
 { return (x + 1) + (CHUNK_SIZE + 2) * ((z + 1) + (y + 1) * (CHUNK_SIZE + 2)); }
@@ -269,23 +258,9 @@ void fillPerlinChunk(Chunk *c)
 		c->empty = true;
 }
 
-#if 0
-Chunk* createPerlinChunk(int xc, int yc, int zc)
-{
-	Chunk *c = createEmptyChunk();
-	allocateChunkData(c);
-	setChunkCoords(c, xc, yc, zc);
-
-	fillPerlinChunk(c);
-	
-	return c;
-}
-#endif
-
 
 uint8 chunk_getBlockUnchecked(Chunk *chunk, int x, int y, int z)
 { return chunk->data[chunk__3Dto1D(x, y, z)]; }
-
 
 uint8 chunk_getBlockChecked(Chunk *chunk, int x, int y, int z)
 {

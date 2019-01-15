@@ -162,7 +162,6 @@ void uploadChunkMesh(ChunkMesh *mesh)
 	}
 }
 
-// TODO: Add local transform uniform update
 void renderChunkMesh(ChunkMesh *mesh)
 {
 	if (!mesh)
@@ -170,6 +169,7 @@ void renderChunkMesh(ChunkMesh *mesh)
 		return;
 	}
 
+	// TODO: This is very gross, should do immediately on mesh gen
 	if (!mesh->uploaded)
 	{
 		uploadChunkMesh(mesh);

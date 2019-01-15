@@ -193,15 +193,6 @@ struct MeshJobArgs
 	ChunkMesh *mesh;
 };
 
-/*
-void meshVanillaGreedyJobCompletion(void *args)
-{
-	Chunk *chunk = (Chunk*)args;
-	uploadChunkMesh(chunk->mesh);
-	finishedMeshes[numFinishedMeshes++] = real->mesh;
-}
-*/
-
 void meshVanillaGreedyJobProc(void *args)
 {
 	meshVanillaGreedy((Chunk*)args);

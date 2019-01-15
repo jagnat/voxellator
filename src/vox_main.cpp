@@ -31,13 +31,11 @@ void init(PlatformState *plat)
 	sim->movement.yaw = M_PI + M_PI / 4;
 	sim->movement.pitch = -M_PI / 5;
 
-	sim->world.init(49839594734698ul);
-
 	initJobSystem(platform->info.logicalCores - 1);
 
-	initRender();
+	sim->world.init(49839594734698ul);
 
-	//finishedMeshes = (ChunkMesh**)calloc(numChunks, sizeof(ChunkMesh*));
+	initRender();
 
 	for (int x = 0; x < chunkSize; x++)
 		for (int z = 0; z < chunkSize; z++)
@@ -51,6 +49,8 @@ void handleEvents();
 
 void buildMovementFromControls();
 
+int timer = 0;
+
 void update()
 {
 	handleEvents();
@@ -61,22 +61,20 @@ void update()
 
 	setCam(sim->movement);
 
-#if 0
-	for (int i = 0; i < numFinishedMeshes; i++)
-	{
-		if (finishedMeshes[i]->doneMeshing)
-		{
-			renderChunkMesh(finishedMeshes[i]);
-		}
-	}
-#endif
-
 	ChunkEntry *entry = sim->world.loadedChunks;
 	while (entry)
 	{
 		if (entry->chunk.hasMesh)
 			renderChunkMesh(entry->chunk.mesh);
 		entry = entry->next;
+	}
+
+	timer++;
+	if (timer == 1000)
+	{
+		// Unload all chunks here
+		printf("Unloading 0, 0, 0 chunk\n");
+		sim->world.unloadChunkAt(0, 0, 0);
 	}
 }
 
