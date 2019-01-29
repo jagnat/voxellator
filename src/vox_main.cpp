@@ -70,17 +70,20 @@ void update()
 	}
 
 	timer++;
-	if (timer == 1000)
+	if (timer == 400)
 	{
 		// Unload all chunks here
-		printf("Unloading 0, 0, 0 chunk\n");
-		sim->world.unloadChunkAt(0, 0, 0);
+		for (int x = 0; x < chunkSize; x++)
+			for (int z = 0; z < chunkSize; z++)
+				for (int y = 0; y < chunkSize; y++)
+				{
+					//sim->world.unloadChunkAt(x,y,z);
+				}
 	}
 }
 
 void render(double updateInterval)
 {
-
 }
 
 void buildMovementFromControls()

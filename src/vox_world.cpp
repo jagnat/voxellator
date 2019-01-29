@@ -145,9 +145,16 @@ void World::unloadChunkAt(int x, int y, int z)
 		return;
 
 	chunkTable[index].used = false;
+	// TODO: BAD BAD BAD - REUSE CHUNK DATA
 	if (!chunkTable[index].chunk.empty)
 	{
 		free(chunkTable[index].chunk.data);
+	}
+
+	// TODO: BAD BAD BAD - REUSE MESH
+	if (chunkTable[index].chunk.hasMesh)
+	{
+		deleteChunkMesh(chunkTable[index].chunk.mesh);
 	}
 
 	removeChunkFromList(&loadingChunks, chunkTable + index);
@@ -177,6 +184,7 @@ void World::addChunkToList(ChunkEntry **list, ChunkEntry *entry)
 
 	p->prev = entry;
 	entry->next = p;
+	entry->prev = NULL;
 	*list = entry;
 }
 
