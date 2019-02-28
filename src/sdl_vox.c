@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-void sdl_setPlatformFlag(int flag, bool state)
+void sdl_setPlatformFlag(int flag, int state)
 {
 	if (state)
 		sdl_platform->flags |= flag;
@@ -113,7 +113,7 @@ void sdl_setPlatformFlag(int flag, bool state)
 		sdl_platform->flags &= ~flag;
 }
 
-bool getPlatformFlag(int flag) { return !!(sdl_platform->flags & flag); }
+int getPlatformFlag(int flag) { return !!(sdl_platform->flags & flag); }
 
 void sdl_centerCursor()
 {
@@ -121,7 +121,7 @@ void sdl_centerCursor()
 		sdl_platform->viewportWidth / 2, sdl_platform->viewportHeight / 2);
 }
 
-void setMouseState(bool locked)
+void setMouseState(int locked)
 {
 	if(locked == getPlatformFlag(MOUSE_LOCKED))
 		return;
@@ -231,11 +231,11 @@ static void sdl_loadGlFuncs()
 	#undef GLDEF
 }
 
-struct sdl_threadwrapper
+typedef struct
 {
 	void (*threadProc)(void*);
 	void *threadArgs;
-};
+} sdl_threadwrapper;
 
 int sdl_dummyThreadProc(void *args)
 {
@@ -245,7 +245,7 @@ int sdl_dummyThreadProc(void *args)
 	return 0;
 }
 
-bool createThread(void (*threadProc)(void*), void *threadArgs)
+int createThread(void (*threadProc)(void*), void *threadArgs)
 {
 	//SDL_CreateThread(int (*threadproc)(void*), void *data);
 	sdl_threadwrapper *w = (sdl_threadwrapper*)malloc(sizeof(sdl_threadwrapper));
@@ -293,4 +293,4 @@ void sleepMs(int ms)
 	SDL_Delay(ms);
 }
 
-#include "vox_main.cpp"
+#include "vox_main.c"

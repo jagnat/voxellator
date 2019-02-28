@@ -1,7 +1,7 @@
 #ifndef _VOX_JOBS_H_
 #define _VOX_JOBS_H_
 
-struct Job
+typedef struct
 {
 	void (*jobProc)(void*);
 	//void (*completionProc)(void*);
@@ -9,9 +9,9 @@ struct Job
 	//volatile int done;
 	int priority;
 	//Job *next;
-};
+} Job;
 
-struct JobManager
+typedef struct
 {
 	Job *jobHeap;
 	int jobsQueued;
@@ -19,7 +19,7 @@ struct JobManager
 	void *heapLock;
 
 	int maxJobs;
-};
+} JobManager;
 
 void initJobSystem(int maxJobs);
 //void processJobs();

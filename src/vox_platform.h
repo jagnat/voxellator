@@ -26,45 +26,45 @@ typedef uint64_t uint64;
 #define BUTTON_RELEASED 0
 #define BUTTON_PRESSED 1
 
-enum EventType
+typedef enum
 {
 	EVENT_KEY,
 	EVENT_MOUSE_CLICK,
 	EVENT_MOUSE_MOVE,
 	EVENT_RESIZE,
 	EVENTTYPE_LENGTH
-};
+} EventType;
 
 // TODO: Define keycodes for better agnosticity
-struct KeyEvent
+typedef struct
 {
 	uint8 keyCode;
 	uint8 state;
-};
+} KeyEvent;
 
 #define MOUSE_BUTTON_LEFT 0
 #define MOUSE_BUTTON_RIGHT 1
 
-struct MouseClickEvent
+typedef struct
 {
 	uint mouseButton;
 	uint state;
-};
+} MouseClickEvent;
 
-struct MouseMoveEvent
+typedef struct
 {
 	int x, y;
 	int dx, dy;
 
 	bool locked;
-};
+} MouseMoveEvent;
 
-struct ResizeEvent
+typedef struct
 {
 	int width, height;
-};
+} ResizeEvent;
 
-struct Event
+typedef struct
 {
 	EventType type;
 	union
@@ -74,21 +74,21 @@ struct Event
 		MouseMoveEvent mouseMove;
 		ResizeEvent resize;
 	};
-};
+} Event;
 
 // NOTE: The platform must serialize/deserialize this at init/exit
-struct Config
+typedef struct
 {
 	int renderMode;
 	float mouseSensitivity;
-};
+} Config;
 
-struct PlatformInfo
+typedef struct
 {
 	int logicalCores;
-};
+} PlatformInfo;
 
-struct PlatformState
+typedef struct
 {
 	bool running;
 	double updateTarget, renderTarget;
@@ -104,7 +104,7 @@ struct PlatformState
 	int viewportWidth, viewportHeight;
 
 	PlatformInfo info;
-};
+} PlatformState;
 
 // Functions the platform calls
 void update();
@@ -112,12 +112,12 @@ void render(double updateInterval);
 void init(PlatformState *plat);
 
 // Functions the platform must implement
-void setMouseState(bool locked);
-bool getPlatformFlag(int flag);
+void setMouseState(int locked);
+int getPlatformFlag(int flag);
 double getElapsedMs();
 void sleepMs(int ms);
 
-bool createThread(void (*threadProc)(void*), void *threadData);
+int createThread(void (*threadProc)(void*), void *threadData);
 void atomicIncrement(volatile int *val);
 void atomicDecrement(volatile int *val);
 

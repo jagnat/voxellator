@@ -5,7 +5,7 @@
 
 #include "vox_world.h"
 
-struct Movement
+typedef struct
 {
 	float topSpeed, accelFactor;
 
@@ -16,19 +16,19 @@ struct Movement
 
 	union { JVec3 velocity; JVec3 vel; };
 	union { JVec3 position; JVec3 pos; };
-};
+} Movement;
 
-struct Controls
+typedef struct
 {
 	bool forward, backward, left, right, up, down;
 	float screenDeltaX, screenDeltaY;
-};
+} Controls;
 
-struct SimState
+typedef struct
 {
 	World world;
 	Controls controls;
 	Movement movement;
-};
+} SimState;
 
 #endif // _VOX_MAIN_C_

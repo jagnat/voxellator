@@ -6,7 +6,7 @@
 
 #include "thirdparty/j_threedee.h"
 
-struct VertexColorNormal10
+typedef struct
 {
 	union
 	{
@@ -18,16 +18,16 @@ struct VertexColorNormal10
 	};
 	Color color;
 	uint normal;
-};
+} VertexColorNormal10;
 
-enum IndexMode
+typedef enum
 {
 	INDEX_QUADS,
 	INDEX_TRIS,
 	INDEX_CUSTOM
-};
+} IndexMode;
 
-struct ChunkMesh
+typedef struct ChunkMesh
 {
 	int allocatedVertices;
 	int usedVertices;
@@ -50,13 +50,13 @@ struct ChunkMesh
 			uint vboId, iboId, vaoId;
 		};
 	};
-};
+} ChunkMesh;
 
-enum ShaderType
+typedef enum
 {
 	SHADER_VERT,
 	SHADER_FRAG
-};
+} ShaderType;
 
 void initRender();
 void resizeRender(int w, int h);

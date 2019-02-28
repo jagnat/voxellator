@@ -128,8 +128,9 @@ void meshVanillaNaive(Chunk *chunk)
 			}
 }
 
-void meshVanillaCull(Chunk *chunk, ChunkMesh *mesh)
+void meshVanillaCull(Chunk *chunk)
 {
+	ChunkMesh *mesh = chunk->mesh;
 	double startTime = getElapsedMs();
 
 	VertexColorNormal10 *vertices = (VertexColorNormal10*)malloc(32 * sizeof(VertexColorNormal10));

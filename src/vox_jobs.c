@@ -35,7 +35,7 @@ void initJobSystem(int maxJobs)
 	
 	for (int i = 0; i < jobManager->maxJobs; i++)
 	{
-		bool r = createThread(jobThreadProc, jobManager);
+		int r = createThread(jobThreadProc, jobManager);
 		if (!r)
 			printf("Failed to create thread!\n");
 	}

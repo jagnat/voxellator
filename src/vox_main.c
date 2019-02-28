@@ -8,8 +8,8 @@
 #include "vox_jobs.h"
 
 #define _USE_MATH_DEFINES
-#include <cmath>
-#include <cstdio>
+#include <math.h>
+#include <stdio.h>
 
 #define J_THREEDEE_IMPLEMENTATION
 #include "thirdparty/j_threedee.h"
@@ -33,7 +33,7 @@ void init(PlatformState *plat)
 
 	initJobSystem(platform->info.logicalCores - 1);
 
-	sim->world.init(49839594734698ul);
+	initWorld(&sim->world, 49839594734698ul);
 
 	initRender();
 
@@ -41,7 +41,7 @@ void init(PlatformState *plat)
 		for (int z = 0; z < chunkSize; z++)
 			for (int y = 0; y < chunkSize; y++)
 			{
-				sim->world.getOrCreateChunk(x, y, z);
+				loadChunk(x, y, z);
 			}
 }
 
@@ -49,15 +49,13 @@ void handleEvents();
 
 void buildMovementFromControls();
 
-int timer = 0;
-
 void update()
 {
 	handleEvents();
 
 	buildMovementFromControls();
 
-	sim->world.update();
+	updateWorld();
 
 	setCam(sim->movement);
 
@@ -67,18 +65,6 @@ void update()
 		if (entry->chunk.hasMesh)
 			renderChunkMesh(entry->chunk.mesh);
 		entry = entry->next;
-	}
-
-	timer++;
-	if (timer == 400)
-	{
-		// Unload all chunks here
-		for (int x = 0; x < chunkSize; x++)
-			for (int z = 0; z < chunkSize; z++)
-				for (int y = 0; y < chunkSize; y++)
-				{
-					//sim->world.unloadChunkAt(x,y,z);
-				}
 	}
 }
 
@@ -210,9 +196,9 @@ void handleEvents()
 	}
 }
 
-#include "vox_render.cpp"
-#include "vox_noise.cpp"
-#include "vox_mesher.cpp"
-#include "vox_world.cpp"
-#include "vox_jobs.cpp"
+#include "vox_render.c"
+#include "vox_noise.c"
+#include "vox_mesher.c"
+#include "vox_world.c"
+#include "vox_jobs.c"
 

@@ -3,9 +3,16 @@
 
 #include "vox_noise.h"
 
+World *world;
+
+// World function declarations
+void removeChunkFromList(ChunkEntry **list, ChunkEntry *entry);
+void addChunkToList(ChunkEntry **list, ChunkEntry *entry);
+
 #if 0
 void initWorld(World *wld, uint64 seed)
 {
+	world = wld;
 	wld->gen.seed = seed;
 	wld->gen.mode = GEN_PERL2D;
 	seedPerlin3(&wld->gen.perlin, wld->gen.seed);
@@ -23,13 +30,13 @@ void initWorld(World *wld, uint64 seed)
 }
 #endif
 
-bool Chunk::coordsEqual(int x, int y, int z)
+bool coordsEqual(Chunk *c, int x, int y, int z)
 {
-	return this->x == x && this->y == y && this->z == z;
+	return c->x == x && c->y == y && c->z == z;
 }
-void Chunk::setCoords(int x, int y, int z)
+void setCoords(Chunk *c, int x, int y, int z)
 {
-	this->x = x; this->y = y; this->z = z;
+	c->x = x; c->y = y; c->z = z;
 }
 
 static int chunkCoordHash(int x, int y, int z)
@@ -37,19 +44,20 @@ static int chunkCoordHash(int x, int y, int z)
 	return (x * 8081 + y * 16703) ^ (z * 28057);
 }
 
-void World::init(uint64 seed)
+void initWorld(World *wld, uint64 seed)
 {
-	gen.seed = seed;
-	gen.mode = GEN_PERL3D;
-	seedPerlin3(&gen.perlin, gen.seed);
+	world = wld;
+	world->gen.seed = seed;
+	world->gen.mode = GEN_PERL3D;
+	seedPerlin3(&world->gen.perlin, seed);
 
 	int realSize = CHUNK_SIZE + 2;
 	int chunkStride = sizeof(uint8) * realSize * realSize * realSize;
 }
 
-void World::update()
+void updateWorld()
 {
-	ChunkEntry *loadingPtr = loadingChunks;
+	ChunkEntry *loadingPtr = world->loadingChunks;
 	// Iterate through currently loading chunks
 	while (loadingPtr)
 	{
@@ -58,17 +66,28 @@ void World::update()
 		if (current->chunk.generated)
 		{
 			addGreedyJob(&current->chunk);
-			removeChunkFromList(&loadingChunks, current);
-			addChunkToList(&loadedChunks, current);
+			removeChunkFromList(&world->loadingChunks, current);
+			addChunkToList(&world->loadedChunks, current);
 		}
 	}
 }
 
-int World::linearProbe(int x, int y, int z, int* firstEmpty)
+int chunkInRange(Chunk *c)
+{
+	int x = c->x, y = c->y, z = c->z;
+	if (x > world->cx + LOADED_RAD || x < world->cx - LOADED_RAD ||
+		y > world->cy + LOADED_RAD || y < world->cy - LOADED_RAD ||
+		z > world->cz + LOADED_RAD || z < world->cz - LOADED_RAD)
+		return 0;
+	return 1;
+}
+
+int linearProbe(int x, int y, int z, int* firstEmpty)
 {
 	int raw = chunkCoordHash(x, y, z) % CHUNK_TABLE_LEN;
+	ChunkEntry *ct = world->chunkTable;
 	// Check if chunk is at first index
-	if (chunkTable[raw].used && chunkTable[raw].chunk.coordsEqual(x, y, z))
+	if (ct[raw].used && coordsEqual(&ct[raw].chunk, x, y, z))
 	{
 		if (firstEmpty)
 			*firstEmpty = -1;
@@ -78,12 +97,12 @@ int World::linearProbe(int x, int y, int z, int* firstEmpty)
 	int index = (raw + 1) % CHUNK_TABLE_LEN;
 	int firstEmptyIndex = -1;
 	bool found = false;
-	while (chunkTable[index].dirty && index != raw)
+	while (ct[index].dirty && index != raw)
 	{
-		if (firstEmptyIndex == -1 && !chunkTable[index].used)
+		if (firstEmptyIndex == -1 && !ct[index].used)
 			firstEmptyIndex = index;
 
-		if (chunkTable[index].used && chunkTable[index].chunk.coordsEqual(x, y, z))
+		if (ct[index].used && coordsEqual(&ct[index].chunk, x, y, z))
 		{
 			found = true;
 			break;
@@ -112,53 +131,53 @@ int World::linearProbe(int x, int y, int z, int* firstEmpty)
 	return res;
 }
 
-Chunk* World::getOrCreateChunk(int x, int y, int z)
+void loadChunk(int x, int y, int z)
 {
+	ChunkEntry *ct = world->chunkTable;
 	int firstEmptyIndex = -1;
 	int index = linearProbe(x, y, z, &firstEmptyIndex);
 
 	if (index != -1)
-		return &chunkTable[index].chunk;
+		return;
 
 	if (firstEmptyIndex == -1)
 	{
 		printf("Error: Chunk table out of space!\n");
-		return 0;
+		return;
 	}
 
-	memset(&chunkTable[firstEmptyIndex].chunk, 0, sizeof(Chunk));
-	chunkTable[firstEmptyIndex].chunk.setCoords(x, y, z);
+	memset(&ct[firstEmptyIndex].chunk, 0, sizeof(Chunk));
+	setCoords(&ct[firstEmptyIndex].chunk, x, y, z);
 
-	addChunkToList(&loadingChunks, &chunkTable[firstEmptyIndex]);
-	addPerlinChunkJob(&chunkTable[firstEmptyIndex].chunk);
+	addChunkToList(&world->loadingChunks, &ct[firstEmptyIndex]);
+	addPerlinChunkJob(&ct[firstEmptyIndex].chunk);
 
-	chunkTable[firstEmptyIndex].dirty = true;
-	chunkTable[firstEmptyIndex].used = true;
-
-	return &chunkTable[firstEmptyIndex].chunk;
+	ct[firstEmptyIndex].dirty = true;
+	ct[firstEmptyIndex].used = true;
 }
 
-void World::unloadChunkAt(int x, int y, int z)
+void unloadChunkAt(int x, int y, int z)
 {
+	ChunkEntry *ct = world->chunkTable;
 	int index = linearProbe(x, y, z, NULL);
 	if (index == -1)
 		return;
 
-	chunkTable[index].used = false;
+	ct[index].used = false;
 	// TODO: BAD BAD BAD - REUSE CHUNK DATA
-	if (!chunkTable[index].chunk.empty)
+	if (!ct[index].chunk.empty)
 	{
-		free(chunkTable[index].chunk.data);
+		free(ct[index].chunk.data);
 	}
 
 	// TODO: BAD BAD BAD - REUSE MESH
-	if (chunkTable[index].chunk.hasMesh)
+	if (ct[index].chunk.hasMesh)
 	{
-		deleteChunkMesh(chunkTable[index].chunk.mesh);
+		deleteChunkMesh(ct[index].chunk.mesh);
 	}
 
-	removeChunkFromList(&loadingChunks, chunkTable + index);
-	removeChunkFromList(&loadedChunks, chunkTable + index);
+	removeChunkFromList(&world->loadingChunks, ct + index);
+	removeChunkFromList(&world->loadedChunks, ct + index);
 }
 
 void allocateChunkData(Chunk *chunk)
@@ -171,7 +190,7 @@ void allocateChunkData(Chunk *chunk)
 	chunk->empty = false;
 }
 
-void World::addChunkToList(ChunkEntry **list, ChunkEntry *entry)
+void addChunkToList(ChunkEntry **list, ChunkEntry *entry)
 {
 	ChunkEntry *p = *list;
 	if (!p)
@@ -188,7 +207,7 @@ void World::addChunkToList(ChunkEntry **list, ChunkEntry *entry)
 	*list = entry;
 }
 
-void World::removeChunkFromList(ChunkEntry **list, ChunkEntry *entry)
+void removeChunkFromList(ChunkEntry **list, ChunkEntry *entry)
 {
 	if (entry == *list)
 	{
@@ -201,10 +220,10 @@ void World::removeChunkFromList(ChunkEntry **list, ChunkEntry *entry)
 		entry->next->prev = entry->prev;
 }
 
-inline int chunk__3Dto1D(int x, int y, int z)
+int chunk_3Dto1D(int x, int y, int z)
 { return (x + 1) + (CHUNK_SIZE + 2) * ((z + 1) + (y + 1) * (CHUNK_SIZE + 2)); }
 
-inline bool chunk__inChunk(int x, int y, int z)
+bool chunk_inChunk(int x, int y, int z)
 { return x >= 0 && x < CHUNK_SIZE && y >= 0 && y < CHUNK_SIZE && z >= 0 && z < CHUNK_SIZE; }
 
 void fillPerlinChunk(Chunk *c);
@@ -245,7 +264,7 @@ void fillPerlinChunk(Chunk *c)
 				if (p > 0)
 				{
 					chunk_setBlockUnchecked(c, 255, x, y, z);
-					if (chunk__inChunk(x, y, z))
+					if (chunk_inChunk(x, y, z))
 						c->filledVoxels++;
 				}
 #else
@@ -255,7 +274,7 @@ void fillPerlinChunk(Chunk *c)
 				// if (1)
 				{
 					chunk_setBlockUnchecked(c, 255, x, y, z);
-					if (chunk__inChunk(x, y, z))
+					if (chunk_inChunk(x, y, z))
 						c->filledVoxels++;
 				}
 #endif
@@ -268,21 +287,21 @@ void fillPerlinChunk(Chunk *c)
 
 
 uint8 chunk_getBlockUnchecked(Chunk *chunk, int x, int y, int z)
-{ return chunk->data[chunk__3Dto1D(x, y, z)]; }
+{ return chunk->data[chunk_3Dto1D(x, y, z)]; }
 
 uint8 chunk_getBlockChecked(Chunk *chunk, int x, int y, int z)
 {
 	if (x < -1 || x > CHUNK_SIZE + 1 || y < -1 || y > CHUNK_SIZE + 1 || z < -1 || z > CHUNK_SIZE + 1)
 		return 0;
-	return chunk->data[chunk__3Dto1D(x, y, z)];
+	return chunk->data[chunk_3Dto1D(x, y, z)];
 }
 
 void chunk_setBlockUnchecked(Chunk *chunk, uint8 val, int x, int y, int z)
-{ chunk->data[chunk__3Dto1D(x, y, z)] = val; }
+{ chunk->data[chunk_3Dto1D(x, y, z)] = val; }
 
 void chunk_setBlockChecked(Chunk *chunk, uint8 val, int x, int y, int z)
 {
 	if (x < -1 || x > CHUNK_SIZE + 1 || y < -1 || y > CHUNK_SIZE + 1 || z < -1 || z > CHUNK_SIZE + 1)
 		return;
-	chunk->data[chunk__3Dto1D(x, y, z)] = val;
+	chunk->data[chunk_3Dto1D(x, y, z)] = val;
 }

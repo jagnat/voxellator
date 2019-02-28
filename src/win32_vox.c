@@ -23,10 +23,10 @@ typedef struct
 	double timerResolution;
 
 	LPARAM lastResizeDimensions;
-	bool resizing;
-	bool sizeEvent;
+	int resizing;
+	int sizeEvent;
 
-	bool mouseLocked;
+	int mouseLocked;
 
 	int clientW, clientH;
 } Win32Data;
@@ -46,7 +46,7 @@ LRESULT CALLBACK win32_windowProc(
 int win32_createGLContext();
 void win32_handleEvents();
 void win32_centerCursor();
-void win32_setPlatformFlag(int flag, bool state);
+void win32_setPlatformFlag(int flag, int state);
 
 int CALLBACK WinMain(
 	HINSTANCE instance,
@@ -190,7 +190,7 @@ int main(int argc, char **argv)
 	return WinMain(GetModuleHandle(0), 0, GetCommandLine(), SW_SHOW);
 }
 
-void win32_setPlatformFlag(int flag, bool state)
+void win32_setPlatformFlag(int flag, int state)
 {
 	if (state)
 		win32_platform->flags |= flag;
@@ -198,7 +198,7 @@ void win32_setPlatformFlag(int flag, bool state)
 		win32_platform->flags &= ~flag;
 }
 
-bool getPlatformFlag(int flag)
+int getPlatformFlag(int flag)
 {
 	return !!(win32_platform->flags & flag);
 }
@@ -226,7 +226,7 @@ void win32_centerCursor()
 	SetCursorPos(client.x, client.y);
 }
 
-void setMouseState(bool locked)
+void setMouseState(int locked)
 {
 	if (locked == getPlatformFlag(MOUSE_LOCKED))
 		return;
@@ -502,7 +502,7 @@ int win32_createGLContext()
 	return 0;
 }
 
-bool createThread(void (*threadProc)(void*), void *threadArgs)
+int createThread(void (*threadProc)(void*), void *threadArgs)
 {
 	uint64 res = _beginthread(threadProc, 0, threadArgs);
 

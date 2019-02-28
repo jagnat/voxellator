@@ -7,77 +7,67 @@
 
 #define CHUNK_SIZE 64
 
-struct ChunkMesh;
-
-struct Chunk
+typedef struct
 {
 	uint8 *data;
-	bool empty;
+	int empty;
 	int filledVoxels;
 	int x, y, z;
 	Color color;
 
-	bool hasMesh;
-	ChunkMesh *mesh;
+	int hasMesh;
+	struct ChunkMesh *mesh;
 
 	volatile int generated;
 
-	bool coordsEqual(int x, int y, int z);
+	/*
+	int coordsEqual(int x, int y, int z);
 	void setCoords(int x, int y, int z);
-};
+	*/
+} Chunk;
 
-enum GenMode
+typedef enum
 {
 	GEN_PERL3D,
 	GEN_PERL2D
-};
+} GenMode;
 
-struct GenContext
+typedef struct
 {
 	GenMode mode;
 	Perlin3 perlin;
 	uint64 seed;
-};
+} GenContext;
 
-struct ChunkEntry
+typedef struct ChunkEntry
 {
 	Chunk chunk;
-	bool dirty; // Chunk has been used
-	bool used; // Chunk is currently in use
-	ChunkEntry *next, *prev;
-};
+	int dirty; // Chunk has been used
+	int used; // Chunk is currently in use
+	struct ChunkEntry *next, *prev;
+} ChunkEntry;
 
 #define CHUNK_TABLE_LEN 128
-struct World
+#define LOADED_RAD 2
+typedef struct
 {
 	GenContext gen;
-	ChunkEntry chunkTable[CHUNK_TABLE_LEN] = {};
+	ChunkEntry chunkTable[CHUNK_TABLE_LEN];
 
 	ChunkEntry *loadingChunks;
 	ChunkEntry *loadedChunks;
 
-	// NEW API
-	void init(uint64 seed);
-	void update();
+	int cx, cy, cz; // Chunk coords to be centered around
 
-	Chunk* getOrCreateChunk(int x, int y, int z);
-	void unloadChunkAt(int x, int y, int z);
+} World;
 
-private:
-	int linearProbe(int x, int y, int z, int* firstEmpty);
+void initWorld(World *world, uint64 seed);
+void updateWorld();
 
-	void addChunkToList(ChunkEntry **list, ChunkEntry *entry);
-	void removeChunkFromList(ChunkEntry **list, ChunkEntry *entry);
-};
+void loadChunk(int x, int y, int z);
 
-//void initWorld(World *world, uint64 seed);
-
-//Chunk* createEmptyChunk();
 void allocateChunkData(Chunk *chunk);
-//void freeChunk(Chunk *chunk);
-//void setChunkCoords(Chunk *chunk, int x, int y, int z);
 
-//Chunk* createPerlinChunk(int x, int y, int z);
 void fillPerlinChunk(Chunk *c);
 
 void addPerlinChunkJob(Chunk *c);
