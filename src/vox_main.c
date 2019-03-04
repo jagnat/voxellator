@@ -18,8 +18,8 @@
 PlatformState *platform;
 SimState *sim;
 
-const int chunkSize = 3;
-const int numChunks = chunkSize * chunkSize * chunkSize;
+int chunkSize = 3;
+//int numChunks = chunkSize * chunkSize * chunkSize;
 
 void init(PlatformState *plat)
 {

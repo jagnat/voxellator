@@ -6,4 +6,4 @@ set cflags=/nologo /MT /Zi /EHsc
 set libs=LIBCMT.lib User32.lib Gdi32.lib OpenGL32.lib
 set lflags=/OUT:%output% /SUBSYSTEM:CONSOLE /INCREMENTAL:NO
 
-cl ..\src\win32_vox.cpp %cflags% /link %libs% %lflags%
+cl ..\src\win32_vox.c %cflags% /link %libs% %lflags%

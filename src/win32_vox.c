@@ -267,7 +267,7 @@ LRESULT CALLBACK win32_windowProc(
 	UINT message,
 	WPARAM wParam, LPARAM lParam)
 {
-	Event e = {};
+	Event e = {0};
 
 	LRESULT result = 0;
 
@@ -556,5 +556,5 @@ void sleepMs(int ms)
 	Sleep(ms);
 }
 
-#include "vox_main.cpp"
+#include "vox_main.c"
 

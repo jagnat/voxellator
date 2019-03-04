@@ -218,7 +218,7 @@ void addPerlinChunkJob(Chunk *c)
 	Color col = {80, 50, 100, 255};
 	c->color = col;
 	allocateChunkData(c);
-	Job job = {};
+	Job job = {0};
 	job.jobProc = createPerlinChunkJobProc;
 	//job.completionProc = createPerlinChunkJobCompletion;
 	job.priority = 100;
