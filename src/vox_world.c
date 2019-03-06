@@ -1,7 +1,10 @@
 #include "vox_world.h"
 #include "vox_render.h"
+#include "vox_jobs.h"
 
 #include "vox_noise.h"
+
+#include <stdlib.h>
 
 World *world;
 
@@ -220,7 +223,6 @@ void addPerlinChunkJob(Chunk *c)
 	allocateChunkData(c);
 	Job job = {0};
 	job.jobProc = createPerlinChunkJobProc;
-	//job.completionProc = createPerlinChunkJobCompletion;
 	job.priority = 100;
 	job.args = c;
 	addJob(job);

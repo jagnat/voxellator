@@ -10,6 +10,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define J_THREEDEE_IMPLEMENTATION
 #include "thirdparty/j_threedee.h"
@@ -195,10 +196,4 @@ void handleEvents()
 		}
 	}
 }
-
-#include "vox_render.c"
-#include "vox_noise.c"
-#include "vox_mesher.c"
-#include "vox_world.c"
-#include "vox_jobs.c"
 

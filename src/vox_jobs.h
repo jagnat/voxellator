@@ -22,7 +22,6 @@ typedef struct
 } JobManager;
 
 void initJobSystem(int maxJobs);
-//void processJobs();
 void addJob(Job job);
 
 #endif //_VOX_JOBS_H_

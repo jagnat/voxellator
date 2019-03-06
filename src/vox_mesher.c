@@ -1,5 +1,9 @@
 #include "vox_mesher.h"
 
+#include "vox_jobs.h"
+
+#include <stdlib.h>
+
 // TODO: Encode some information in w
 typedef struct
 {

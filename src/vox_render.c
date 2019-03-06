@@ -1,5 +1,11 @@
 #include "vox_render.h"
 
+#include <stdio.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include <GL/gl.h>
 
 #if !(defined(__glext_h_) || defined(__gl_glext_h_))
@@ -9,6 +15,8 @@
 #include "thirdparty/j_threedee.h"
 
 #include "vox_noise.h"
+
+#include "vox_gldefs.h"
 
 #define CHUNK_RANGE_BITS 5
 #define CHUNKMESH_ARRAY_SIZE (1 << CHUNK_RANGE_BITS)

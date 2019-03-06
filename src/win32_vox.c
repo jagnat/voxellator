@@ -1,10 +1,12 @@
 #include "vox_platform.h"
 
 #include <windows.h>
+#include <GL/gl.h>
 #include <process.h>
+
 #undef near
 #undef far
-#include <GL/gl.h>
+
 #include "thirdparty/glext.h"
 #include "thirdparty/wglext.h"
 
@@ -555,6 +557,4 @@ void sleepMs(int ms)
 {
 	Sleep(ms);
 }
-
-#include "vox_main.c"
 

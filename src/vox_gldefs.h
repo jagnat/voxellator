@@ -39,7 +39,7 @@ GLDEF(void, DetachShader, GLuint program, GLuint shader) \
 #endif
 
 #define GLDEF(retrn, name, ...) typedef retrn GLDECL name##proc(__VA_ARGS__); \
-static name##proc * gl##name;
+name##proc * gl##name;
 GL_LIST
 #undef GLDEF
 

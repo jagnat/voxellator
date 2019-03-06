@@ -5,18 +5,14 @@ typedef union _Color
 {
 	struct
 	{
-		uint8 r, g, b, a;
+		unsigned char r, g, b, a;
 	};
 	struct
 	{
-		uint8 red, green, blue, alpha;
+		unsigned char red, green, blue, alpha;
 	};
-	uint8 element[4];
+	unsigned char element[4];
 } Color;
-
-Color COLOR_RED = {255, 0, 0, 255};
-Color COLOR_GREEN = {0, 255, 0, 255};
-Color COLOR_BLUE = {0, 0, 255, 255};
 
 typedef union _JVec2
 {

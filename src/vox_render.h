@@ -4,6 +4,9 @@
 // Backend-agnostic rendering API for generic meshes
 // Try not to expose any OpenGL/Vulkan specific stuff in here
 
+#include "vox_platform.h"
+#include "vox_main.h"
+
 #include "thirdparty/j_threedee.h"
 
 typedef struct

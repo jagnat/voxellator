@@ -1,4 +1,7 @@
 #include "vox_jobs.h"
+#include "vox_platform.h"
+
+#include <stdlib.h>
 
 JobManager *jobManager;
 
@@ -7,7 +10,7 @@ static Job extractJob(JobManager *jm);
 static void jobThreadProc(void* data)
 {
 	JobManager *jm = (JobManager*)data;
-	while (true)
+	while (1)
 	{
 		Job job = extractJob(jm);
 		if (!job.jobProc) // Heap was empty

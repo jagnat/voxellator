@@ -2,6 +2,8 @@
 #ifndef _VOX_NOISE_H_
 #define _VOX_NOISE_H_
 
+#include "vox_platform.h"
+
 typedef struct
 {
 	uint8 indices[512];

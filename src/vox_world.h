@@ -4,6 +4,7 @@
 
 #include "vox_noise.h"
 #include "vox_platform.h"
+#include "thirdparty/j_threedee.h"
 
 #define CHUNK_SIZE 64
 
@@ -19,11 +20,6 @@ typedef struct
 	struct ChunkMesh *mesh;
 
 	volatile int generated;
-
-	/*
-	int coordsEqual(int x, int y, int z);
-	void setCoords(int x, int y, int z);
-	*/
 } Chunk;
 
 typedef enum
