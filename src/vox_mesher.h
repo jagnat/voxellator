@@ -3,7 +3,6 @@
 #define _VOX_MESHER_H_
 
 #include "vox_render.h"
-#include "vox_world.h"
 
 void meshVanillaNaive(Chunk *chunk);
 void meshVanillaCull(Chunk *chunk);

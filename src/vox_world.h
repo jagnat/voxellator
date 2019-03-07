@@ -12,7 +12,7 @@ typedef struct
 {
 	uint8 *data;
 	int empty;
-	int filledVoxels;
+	int numSet;
 	int x, y, z;
 	Color color;
 
@@ -35,29 +35,7 @@ typedef struct
 	uint64 seed;
 } GenContext;
 
-typedef struct ChunkEntry
-{
-	Chunk chunk;
-	int dirty; // Chunk has been used
-	int used; // Chunk is currently in use
-	struct ChunkEntry *next, *prev;
-} ChunkEntry;
-
-#define CHUNK_TABLE_LEN 128
-#define LOADED_RAD 2
-typedef struct
-{
-	GenContext gen;
-	ChunkEntry chunkTable[CHUNK_TABLE_LEN];
-
-	ChunkEntry *loadingChunks;
-	ChunkEntry *loadedChunks;
-
-	int cx, cy, cz; // Chunk coords to be centered around
-
-} World;
-
-void initWorld(World *world, uint64 seed);
+void initWorld(uint64 seed);
 void updateWorld();
 
 void loadChunk(int x, int y, int z);

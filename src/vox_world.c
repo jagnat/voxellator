@@ -3,8 +3,33 @@
 #include "vox_jobs.h"
 
 #include "vox_noise.h"
+#include "vox_mesher.h"
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+typedef struct ChunkEntry
+{
+	Chunk chunk;
+	int dirty; // Chunk has been used
+	int used; // Chunk is currently in use
+	struct ChunkEntry *next, *prev;
+} ChunkEntry;
+
+#define CHUNK_TABLE_LEN 128
+#define LOADED_RAD 2
+typedef struct
+{
+	GenContext gen;
+	ChunkEntry chunkTable[CHUNK_TABLE_LEN];
+
+	ChunkEntry *loadingChunks;
+	ChunkEntry *loadedChunks;
+
+	int cx, cy, cz; // Chunk coords to be centered around
+
+} World;
 
 World *world;
 
@@ -27,9 +52,9 @@ static int chunkCoordHash(int x, int y, int z)
 	return (x * 8081 + y * 16703) ^ (z * 28057);
 }
 
-void initWorld(World *wld, uint64 seed)
+void initWorld(uint64 seed)
 {
-	world = wld;
+	world = calloc(1, sizeof(World));
 	world->gen.seed = seed;
 	world->gen.mode = GEN_PERL3D;
 	seedPerlin3(&world->gen.perlin, seed);
@@ -247,7 +272,7 @@ void fillPerlinChunk(Chunk *c)
 				{
 					chunk_setBlockUnchecked(c, 255, x, y, z);
 					if (chunk_inChunk(x, y, z))
-						c->filledVoxels++;
+						c->numSet++;
 				}
 #else
 				float p = perlin3(&perl, (xc + x) / 30.0, 298.3219f, (zc + z) / 30.0);
@@ -257,13 +282,13 @@ void fillPerlinChunk(Chunk *c)
 				{
 					chunk_setBlockUnchecked(c, 255, x, y, z);
 					if (chunk_inChunk(x, y, z))
-						c->filledVoxels++;
+						c->numSet++;
 				}
 #endif
 			}
 
 	c->generated = 1;
-	if (c->filledVoxels == 0)
+	if (c->numSet == 0)
 		c->empty = true;
 }
 

@@ -26,7 +26,6 @@ typedef struct
 
 typedef struct
 {
-	World world;
 	Controls controls;
 	Movement movement;
 } SimState;

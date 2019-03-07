@@ -293,4 +293,3 @@ void sleepMs(int ms)
 	SDL_Delay(ms);
 }
 
-#include "vox_main.c"

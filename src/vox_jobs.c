@@ -1,6 +1,7 @@
 #include "vox_jobs.h"
 #include "vox_platform.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 JobManager *jobManager;

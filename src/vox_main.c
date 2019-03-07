@@ -14,7 +14,6 @@
 
 #define J_THREEDEE_IMPLEMENTATION
 #include "thirdparty/j_threedee.h"
-#undef J_THREEDEE_IMPLEMENTATION
 
 PlatformState *platform;
 SimState *sim;
@@ -34,7 +33,7 @@ void init(PlatformState *plat)
 
 	initJobSystem(platform->info.logicalCores - 1);
 
-	initWorld(&sim->world, 49839594734698ul);
+	initWorld(49839594734698ul);
 
 	initRender();
 
@@ -59,14 +58,6 @@ void update()
 	updateWorld();
 
 	setCam(sim->movement);
-
-	ChunkEntry *entry = sim->world.loadedChunks;
-	while (entry)
-	{
-		if (entry->chunk.hasMesh)
-			renderChunkMesh(entry->chunk.mesh);
-		entry = entry->next;
-	}
 }
 
 void render(double updateInterval)

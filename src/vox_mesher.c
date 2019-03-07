@@ -2,7 +2,9 @@
 
 #include "vox_jobs.h"
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // TODO: Encode some information in w
 typedef struct
@@ -110,12 +112,12 @@ void setModelMatrix(Chunk *chunk)
 void meshVanillaNaive(Chunk *chunk)
 {
 	ChunkMesh *mesh = chunk->mesh;
-	mesh->vertices = (VertexColorNormal10*)malloc(chunk->filledVoxels * 24 * sizeof(VertexColorNormal10));
+	mesh->vertices = (VertexColorNormal10*)malloc(chunk->numSet * 24 * sizeof(VertexColorNormal10));
 	setModelMatrix(chunk);
 
 	mesh->indexMode = INDEX_QUADS;
-	mesh->usedVertices = chunk->filledVoxels * 24;
-	mesh->numIndices = chunk->filledVoxels * 36;
+	mesh->usedVertices = chunk->numSet * 24;
+	mesh->numIndices = chunk->numSet * 36;
 
 	MeshBuildContext context = {0};
 	context.current = mesh->vertices;
