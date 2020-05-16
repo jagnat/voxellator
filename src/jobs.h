@@ -1,5 +1,4 @@
-#ifndef _VOX_JOBS_H_
-#define _VOX_JOBS_H_
+#pragma once
 
 typedef struct
 {
@@ -23,5 +22,3 @@ typedef struct
 
 void initJobSystem(int maxJobs);
 void addJob(Job job);
-
-#endif //_VOX_JOBS_H_

@@ -1,4 +1,4 @@
-#include "vox_platform.h"
+#include "platform.h"
 
 #include <SDL2/SDL.h>
 
@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "vox_gldefs.h"
+#include "gldefs.h"
 
 typedef struct
 {
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 	double prevTime, currentTime, elapsedTime, updateDelta, renderDelta;
 	elapsedTime = updateDelta = renderDelta = 0;
 
-	prevTime = getElapsedMs();
+	prevTime = get_elapsed_ms();
 
 	while (sdl_platform->running)
 	{
@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 		if (getPlatformFlag(MOUSE_LOCKED))
 			sdl_centerCursor();
 
-		currentTime = getElapsedMs();
+		currentTime = get_elapsed_ms();
 
 		elapsedTime = currentTime - prevTime;
 
@@ -231,27 +231,9 @@ static void sdl_loadGlFuncs()
 	#undef GLDEF
 }
 
-typedef struct
-{
-	void (*threadProc)(void*);
-	void *threadArgs;
-} sdl_threadwrapper;
-
-int sdl_dummyThreadProc(void *args)
-{
-	sdl_threadwrapper *tw = (sdl_threadwrapper*)args;
-	tw->threadProc(tw->threadArgs);
-	free(args);
-	return 0;
-}
-
 int createThread(void (*threadProc)(void*), void *threadArgs)
 {
-	//SDL_CreateThread(int (*threadproc)(void*), void *data);
-	sdl_threadwrapper *w = (sdl_threadwrapper*)malloc(sizeof(sdl_threadwrapper));
-	w->threadProc = threadProc;
-	w->threadArgs = threadArgs;
-	SDL_Thread *t=SDL_CreateThread(sdl_dummyThreadProc, "test_name", w);
+	SDL_Thread *t=SDL_CreateThread(threadProc, "test_name", threadArgs);
 	if (!t)
 		return false;
 	SDL_DetachThread(t);
@@ -283,7 +265,7 @@ int unlockMutex(void *mutex)
 	return SDL_UnlockMutex((SDL_mutex*)mutex);
 }
 
-double getElapsedMs()
+double get_elapsed_ms()
 {
 	return (double)SDL_GetPerformanceCounter() / sdl->timerResolution;
 }

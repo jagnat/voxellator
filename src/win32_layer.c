@@ -1,4 +1,4 @@
-#include "vox_platform.h"
+#include "platform.h"
 
 #include <windows.h>
 #include <GL/gl.h>
@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "vox_gldefs.h"
+#include "gldefs.h"
 
 typedef struct
 {
@@ -137,7 +137,7 @@ int CALLBACK WinMain(
 	double prevTime, currentTime, elapsedTime, updateDelta, renderDelta;
 	elapsedTime = updateDelta = renderDelta = 0;
 
-	prevTime = getElapsedMs();
+	prevTime = get_elapsed_ms();
 
 	while (win32_platform->running)
 	{
@@ -146,7 +146,7 @@ int CALLBACK WinMain(
 		if (getPlatformFlag(MOUSE_LOCKED))
 			win32_centerCursor();
 
-		currentTime = getElapsedMs();
+		currentTime = get_elapsed_ms();
 
 		elapsedTime = currentTime - prevTime;
 
@@ -545,7 +545,7 @@ int unlockMutex(void *mutex)
 	return 0;
 }
 
-double getElapsedMs()
+double get_elapsed_ms()
 {
 	LARGE_INTEGER res;
 	QueryPerformanceCounter(&res);

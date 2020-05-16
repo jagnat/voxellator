@@ -1,6 +1,4 @@
 #pragma once
-#ifndef _VOX_GLDEFS_H_
-#define _VOX_GLDEFS_H_
 
 #define GL_LIST \
 /* Begin gl funcs*/ \
@@ -42,5 +40,3 @@ GLDEF(void, DetachShader, GLuint program, GLuint shader) \
 name##proc * gl##name;
 GL_LIST
 #undef GLDEF
-
-#endif // _VOX_GLDEFS_H_

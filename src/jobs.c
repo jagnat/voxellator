@@ -1,5 +1,5 @@
-#include "vox_jobs.h"
-#include "vox_platform.h"
+#include "jobs.h"
+#include "platform.h"
 
 #include <stdio.h>
 #include <stdlib.h>

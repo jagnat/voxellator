@@ -1,11 +1,11 @@
-#include "vox_main.h"
+#include "main.h"
 
-#include "vox_platform.h"
-#include "vox_render.h"
-#include "vox_world.h"
-#include "vox_mesher.h"
-#include "vox_noise.h"
-#include "vox_jobs.h"
+#include "platform.h"
+#include "render.h"
+#include "world.h"
+#include "mesher.h"
+#include "noise.h"
+#include "jobs.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -31,18 +31,11 @@ void init(PlatformState *plat)
 	sim->movement.yaw = M_PI + M_PI / 4;
 	sim->movement.pitch = -M_PI / 5;
 
-	initJobSystem(platform->info.logicalCores - 1);
-
-	initWorld(49839594734698ul);
-
 	initRender();
 
-	for (int x = 0; x < chunkSize; x++)
-		for (int z = 0; z < chunkSize; z++)
-			for (int y = 0; y < chunkSize; y++)
-			{
-				loadChunk(x, y, z);
-			}
+	initJobSystem(platform->info.logicalCores - 1);
+
+	init_world(49839594734698ul);
 }
 
 void handleEvents();
@@ -55,9 +48,9 @@ void update()
 
 	buildMovementFromControls();
 
-	updateWorld();
-
 	setCam(sim->movement);
+
+	update_world();
 }
 
 void render(double updateInterval)
@@ -69,7 +62,7 @@ void buildMovementFromControls()
 	Controls *con = &sim->controls;
 	Movement *mov = &sim->movement;
 	
-	const float MOUSE_FACTOR = 0.75;
+	const float MOUSE_FACTOR = 1;
 	float yawDelta = con->screenDeltaX * MOUSE_FACTOR;
 	float pitchDelta = con->screenDeltaY * MOUSE_FACTOR;
 	

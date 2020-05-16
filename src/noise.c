@@ -1,30 +1,29 @@
-#include "vox_noise.h"
+#include "noise.h"
 
-//uint8 pIndices[512];
-
-//uint64 xor_x;
-static uint64 xorshift_64(Perlin3 *perl)
+static uint64 xorshift_64(NoiseSapling *noise)
 {
-	perl->xor_x ^= perl->xor_x >> 12;
-	perl->xor_x ^= perl->xor_x << 25;
-	perl->xor_x ^= perl->xor_x >> 27;
-	return perl->xor_x * 2685821657736338717ul;
+	noise->xor_x ^= noise->xor_x >> 12;
+	noise->xor_x ^= noise->xor_x << 25;
+	noise->xor_x ^= noise->xor_x >> 27;
+	return noise->xor_x * 2685821657736338717ul;
 }
 
-void seedPerlin3(Perlin3 *perl, uint64 seed)
+void seed_noise(NoiseSapling *noise, uint64 seed)
 {
-	perl->xor_x = (seed + 1) * 12907;
+	noise->original_seed = seed;
+	noise->xor_x = (seed + 1) * 12907;
 	for (int i = 0; i < 256; i++)
 	{
-		perl->indices[i] = (uint8)i;
-		perl->indices[i + 256] = (uint8)i;
+		noise->indices[i] = (uint8)i;
+		noise->indices[i + 256] = (uint8)i;
 	}
+
 	for (int i = 0; i < 512; i++)
 	{
-		int r = xorshift_64(perl) % 512;
-		uint8 swap = perl->indices[i];
-		perl->indices[i] = perl->indices[r];
-		perl->indices[r] = swap;
+		int r = xorshift_64(noise) % 512;
+		uint8 swap = noise->indices[i];
+		noise->indices[i] = noise->indices[r];
+		noise->indices[r] = swap;
 	}
 }
 
@@ -48,7 +47,7 @@ float pgrad3(int hash, float x, float y, float z)
 	return ((h & 1) == 0? u: -u) + ((h & 2) == 0? v : -v);
 }
 
-float perlin3(Perlin3 *perl, float x, float y, float z)
+float perlin3(NoiseSapling *noise, float x, float y, float z)
 {
 	int xi = (int)x & 255;
 	int yi = (int)y & 255;
@@ -64,7 +63,7 @@ float perlin3(Perlin3 *perl, float x, float y, float z)
 	double v = PERL_FADE(yf);
 	double w = PERL_FADE(zf);
 
-	uint8 *p = perl->indices;
+	uint8 *p = noise->indices;
 	int a = p[xi] + yi;
 	int aa = p[a] + zi;
 	int ab = p[a + 1] + zi;

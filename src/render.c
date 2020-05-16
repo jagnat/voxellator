@@ -1,4 +1,4 @@
-#include "vox_render.h"
+#include "render.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,12 +15,7 @@
 
 #include "thirdparty/j_threedee.h"
 
-#include "vox_noise.h"
-
-#include "vox_gldefs.h"
-
-#define CHUNK_RANGE_BITS 5
-#define CHUNKMESH_ARRAY_SIZE (1 << CHUNK_RANGE_BITS)
+#include "gldefs.h"
 
 typedef struct
 {
@@ -112,6 +107,7 @@ void resizeRender(int w, int h)
 ChunkMesh* createChunkMesh()
 {
 	ChunkMesh *mesh = (ChunkMesh*)calloc(1, sizeof(ChunkMesh));
+	mesh->indexMode = INDEX_QUADS;
 	glGenVertexArrays(1, &mesh->vaoId);
 	glGenBuffers(2, mesh->ids);
 
@@ -169,6 +165,8 @@ void uploadChunkMesh(ChunkMesh *mesh)
 			GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
+
+	mesh->uploaded = 1;
 }
 
 void renderChunkMesh(ChunkMesh *mesh)

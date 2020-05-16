@@ -1,9 +1,8 @@
-#ifndef _VOX_MAIN_C_
-#define _VOX_MAIN_C_
+#pragma once
 
 #include "thirdparty/j_threedee.h"
 
-#include "vox_world.h"
+#include "platform.h"
 
 typedef struct
 {
@@ -29,5 +28,3 @@ typedef struct
 	Controls controls;
 	Movement movement;
 } SimState;
-
-#endif // _VOX_MAIN_C_

@@ -6,8 +6,6 @@
 // except for what exists in this header file.
 
 #pragma once
-#ifndef _VOX_PLATFORM_H_
-#define _VOX_PLATFORM_H_
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -114,7 +112,7 @@ void init(PlatformState *plat);
 // Functions the platform must implement
 void setMouseState(int locked);
 int getPlatformFlag(int flag);
-double getElapsedMs();
+double get_elapsed_ms();
 void sleepMs(int ms);
 
 int createThread(void (*threadProc)(void*), void *threadData);
@@ -124,6 +122,3 @@ void atomicDecrement(volatile int *val);
 void* createMutex();
 int lockMutex(void *mutex);
 int unlockMutex(void* mutex);
-
-#endif //_VOX_PLATFORM_H_
-

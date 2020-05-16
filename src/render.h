@@ -1,11 +1,10 @@
-#ifndef _VOX_RENDER_H_
-#define _VOX_RENDER_H_
+#pragma once
 
 // Backend-agnostic rendering API for generic meshes
 // Try not to expose any OpenGL/Vulkan specific stuff in here
 
-#include "vox_platform.h"
-#include "vox_main.h"
+#include "platform.h"
+#include "main.h"
 
 #include "thirdparty/j_threedee.h"
 
@@ -22,6 +21,16 @@ typedef struct
 	Color color;
 	uint normal;
 } VertexColorNormal10;
+
+
+typedef union
+{
+	struct
+	{
+		uint8 x, y, z, voxel_type;
+	};
+	uint8 elem[4];
+} VoxelVertex;
 
 typedef enum
 {
@@ -71,6 +80,3 @@ void deleteChunkMesh(ChunkMesh *mesh);
 
 void setCam(Movement mov);
 ChunkMesh *createSampleMesh();
-
-#endif // _VOX_RENDER_H_
-
