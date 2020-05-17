@@ -136,21 +136,16 @@ void update_world(JVec3 player_loc)
 			continue;
 		}
 
-		if (it->generated == 0 && !work_chunk)
+		if (it->generated == 0)
 		{
-			work_chunk = it;
-			it = it->next;
-			continue;
+			if (!work_chunk) work_chunk = it;
+		}
+		else if (it->meshed == 0 && populate_chunk_neighbors(it) == 6 && chunk_has_generated_neighbors(it))
+		{
+			if (!work_chunk) work_chunk = it;
 		}
 
-		if (!work_chunk && it->meshed == 0 && populate_chunk_neighbors(it) == 6 && chunk_has_generated_neighbors())
-		{
-			work_chunk = it;
-			it = it->next;
-			continue;
-		}
-
-		if (it->meshed)
+		if (it->meshed && !it->empty)
 			renderChunkMesh(it->mesh);
 		
 		it = it->next;
@@ -213,14 +208,7 @@ void free_chunk(Chunk *chunk)
 	remove_chunk_from_list(&world->used_list, chunk);
 	if (chunk->mesh)
 		deleteChunkMesh(chunk->mesh);
-	chunk->mesh = NULL;
-	chunk->in_use = 0;
-	chunk->generated = 0;
-	chunk->meshed = 0;
-	for (int i = 0; i < 6; i++)
-	{
-		chunk->neighbors[i] = 0;
-	}
+	memset(chunk, 0, sizeof(Chunk));
 	add_chunk_to_list(&world->free_list, chunk);
 }
 

@@ -23,7 +23,7 @@ static void jobThreadProc(void* data)
 	}
 }
 
-void initJobSystem(int maxJobs)
+void init_job_system(int maxJobs)
 {
 	jobManager = (JobManager*)calloc(1, sizeof(JobManager));
 
@@ -123,7 +123,7 @@ void processJobs()
 #endif
 
 // Add job to job queue
-void addJob(Job job)
+void add_job(Job job)
 {
 	JobManager *jm = jobManager;
 	lockMutex(jm->heapLock);

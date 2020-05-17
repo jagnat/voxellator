@@ -32,7 +32,7 @@ void init(PlatformState *plat)
 
 	initRender();
 
-	initJobSystem(platform->info.logicalCores - 1);
+	init_job_system(platform->info.logicalCores - 1);
 
 	init_world(49839594734698ul);
 }

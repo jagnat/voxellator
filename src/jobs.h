@@ -20,5 +20,5 @@ typedef struct
 	int maxJobs;
 } JobManager;
 
-void initJobSystem(int maxJobs);
-void addJob(Job job);
+void init_job_system(int maxJobs);
+void add_job(Job job);
