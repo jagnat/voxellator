@@ -11,3 +11,7 @@ typedef struct
 
 void seed_noise(NoiseSapling *noise, uint64 seed);
 float perlin3(NoiseSapling *noise, float x, float y, float z);
+
+float simplex2(NoiseSapling *noise, float x, float y);
+
+float lerpf(float a, float b, float x);

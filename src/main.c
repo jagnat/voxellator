@@ -3,7 +3,6 @@
 #include "platform.h"
 #include "render.h"
 #include "world.h"
-#include "mesher.h"
 #include "noise.h"
 #include "jobs.h"
 
@@ -25,9 +24,9 @@ void init(PlatformState *plat)
 {
 	platform = plat;
 	sim = (SimState*)calloc(1, sizeof(SimState));
-	sim->movement.pos.x = -16;
-	sim->movement.pos.z = -16;
-	sim->movement.pos.y = 80;
+	sim->movement.pos.x = 3000;
+	sim->movement.pos.z = 30;
+	sim->movement.pos.y = 62;
 	sim->movement.yaw = M_PI + M_PI / 4;
 	sim->movement.pitch = -M_PI / 5;
 
@@ -50,7 +49,7 @@ void update()
 
 	setCam(sim->movement);
 
-	update_world();
+	update_world(sim->movement.pos);
 }
 
 void render(double updateInterval)
@@ -74,7 +73,7 @@ void buildMovementFromControls()
 	
 	mov->yaw = fmod(mov->yaw - yawDelta, 2 * M_PI);
 
-	const float MV_DELTA = 0.2;
+	const float MV_DELTA = 0.5;
 	if (con->forward)
 	{
 		mov->pos.z -= MV_DELTA * cos(mov->yaw);

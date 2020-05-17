@@ -6,6 +6,7 @@
 #include "thirdparty/j_threedee.h"
 
 #define CHUNK_SIZE 64
+#define NUM_VOXELS_IN_CHUNK (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE)
 
 typedef enum
 {
@@ -40,7 +41,7 @@ struct _Chunk
 	Chunk *next;
 	ChunkMesh *mesh;
 	Chunk* neighbors[6]; // +x, -x, +y, -y, +z, -z
-	uint8 voxels[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
+	uint8 voxels[NUM_VOXELS_IN_CHUNK];
 };
 
 #define CHUNK_COORD_TO_INDEX(x, y, z) ((x) + CHUNK_SIZE * ((z) + (y) * CHUNK_SIZE))
@@ -54,4 +55,4 @@ VoxelType chunk_get_voxel_at(Chunk *chunk, int x, int y, int z);
 void chunk_set_voxel(Chunk *chunk, VoxelType val, int x, int y, int z);
 
 void init_world(uint64 seed);
-void update_world();
+void update_world(JVec3 player_loc);

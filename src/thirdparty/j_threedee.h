@@ -1,5 +1,5 @@
-#ifndef J_THREEDEE_HEADER
-#define J_THREEDEE_HEADER
+#ifndef THREEDEE_HEADER
+#define THREEDEE_HEADER
 
 typedef union _Color
 {
@@ -62,6 +62,8 @@ typedef union _JMat4
 	};
 } JMat4;
 
+Color Color_Lerp(Color c1, Color c2, float f);
+
 JVec2 JVec2_Create(float x, float y);
 JVec2 JVec2_Add(JVec2 v1, JVec2 v2);
 JVec2 JVec2_Subtract(JVec2 v1, JVec2 v2);
@@ -93,11 +95,21 @@ int JMat4_Invert(JMat4 in, JMat4 *out); // Returns 1 if succeeded, 0 if failed
 JMat4 JMat4_LookAt(JVec3 target, JVec3 eye, JVec3 up);
 JMat4 JMat4_FPSCam(JVec3 eye, float rotationLR, float rotationUD);
 
-#endif // J_THREEDEE_HEADER
+#endif // THREEDEE_HEADER
 
 #ifdef J_THREEDEE_IMPLEMENTATION
 
 #include <math.h>
+
+Color Color_Lerp(Color c1, Color c2, float f)
+{
+	Color c3;
+	c3.r = c1.r + (unsigned char)(((float)c2.r - (float)c1.r) * f);
+	c3.g = c1.g + (unsigned char)(((float)c2.g - (float)c1.g) * f);
+	c3.b = c1.b + (unsigned char)(((float)c2.b - (float)c1.b) * f);
+	c3.a = c1.a + (unsigned char)(((float)c2.a - (float)c1.a) * f);
+	return c3;
+}
 
 JVec2 JVec2_Create(float x, float y) { JVec2 v = {x, y}; return v; }
 JVec2 JVec2_Add(JVec2 v1, JVec2 v2) { return JVec2_Create(v1.x + v2.x, v1.y + v2.y); }
