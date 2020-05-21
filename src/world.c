@@ -9,7 +9,7 @@
 #include <string.h>
 #include <assert.h>
 
-#define CHUNK_POOL_SIZE 1024
+#define CHUNK_POOL_SIZE 4096
 
 typedef struct
 {
@@ -79,6 +79,9 @@ int chunk_in_loaded_range(Chunk *c, int cx, int cy, int cz);
 // Returns the # of chunk neighbors that exist
 int populate_chunk_neighbors(Chunk *chunk);
 
+void add_gen_job(Chunk *c);
+void add_mesh_job(Chunk *c);
+
 void gen_perlin_chunk(Chunk *c);
 void mesh_chunk_culled(Chunk *chunk);
 
@@ -96,7 +99,7 @@ void init_world(uint64 seed)
 	}
 }
 
-#define lOADED_CHUNK_RAD 6
+#define lOADED_CHUNK_RAD 5
 
 void update_world(JVec3 player_loc)
 {
@@ -136,28 +139,32 @@ void update_world(JVec3 player_loc)
 			continue;
 		}
 
-		if (it->generated == 0)
+		if (it->generation_status == STATUS_NOT_STARTED)
 		{
-			if (!work_chunk) work_chunk = it;
+			it->generation_status = STATUS_IN_PROGRESS;
+			add_gen_job(it);
 		}
-		else if (it->meshed == 0 && populate_chunk_neighbors(it) == 6 && chunk_has_generated_neighbors(it))
+		else if (it->meshing_status == STATUS_NOT_STARTED && populate_chunk_neighbors(it) == 6 && chunk_has_generated_neighbors(it))
 		{
-			if (!work_chunk) work_chunk = it;
+			it->meshing_status = STATUS_IN_PROGRESS;
+			add_mesh_job(it);
 		}
 
-		if (it->meshed && !it->empty)
+		if (it->meshing_status == STATUS_COMPLETED && !it->empty)
+		{
 			renderChunkMesh(it->mesh);
+		}
 		
 		it = it->next;
 	}
 
-	if (work_chunk)
-	{
-		if (!work_chunk->generated)
-			gen_perlin_chunk(work_chunk);
-		else if (!work_chunk->meshed)
-			mesh_chunk_culled(work_chunk);
-	}
+	// if (work_chunk)
+	// {
+	// 	if (!work_chunk->generated)
+	// 		gen_perlin_chunk(work_chunk);
+	// 	else if (!work_chunk->meshed)
+	// 		mesh_chunk_culled(work_chunk);
+	// }
 }
 
 void add_chunk_to_list(Chunk **list, Chunk *chunk)
@@ -257,10 +264,16 @@ int chunk_has_generated_neighbors(Chunk *chunk)
 {
 	for (int i = 0; i < 6; i++)
 	{
-		if (!chunk->neighbors[i] || chunk->neighbors[i]->generated == 0)
+		if (!chunk->neighbors[i] || chunk->neighbors[i]->generation_status != STATUS_COMPLETED)
 			return false;
 	}
 	return true;
+}
+
+void add_gen_job(Chunk *c)
+{
+	Job job = {gen_perlin_chunk, c, 10};
+	add_job(job);
 }
 
 void gen_perlin_chunk(Chunk *c)
@@ -291,7 +304,7 @@ void gen_perlin_chunk(Chunk *c)
 		}
 	}
 
-	c->generated = 1;
+	c->generation_status = STATUS_COMPLETED;
 	if (c->set_voxel_count == 0)
 		c->empty = true;
 	
@@ -357,17 +370,22 @@ VertexColorNormal10* add_face(int face, VertexColorNormal10 *at, int x, int y, i
 	return v;
 }
 
+void add_mesh_job(Chunk *c)
+{
+	if (!c->mesh)
+	{
+		c->mesh = createChunkMesh();
+	}
+	Job job = {mesh_chunk_culled, c, 20};
+	add_job(job);
+}
+
 void mesh_chunk_culled(Chunk *chunk)
 {
-	printf("Cull meshing... ");
 	if (chunk->empty)
 	{
-		chunk->meshed = true;
+		chunk->meshing_status = STATUS_COMPLETED;
 		return;
-	}
-	if (!chunk->mesh)
-	{
-		chunk->mesh = createChunkMesh();
 	}
 	ChunkMesh *mesh = chunk->mesh;
 	double startTime = get_elapsed_ms();
@@ -432,9 +450,7 @@ void mesh_chunk_culled(Chunk *chunk)
 	mesh->allocatedVertices = allocatedVerts;
 	mesh->numIndices = (mesh->usedVertices / 4) * 6;
 
-	uploadChunkMesh(mesh);
-
-	chunk->meshed = 1;
+	chunk->meshing_status = STATUS_COMPLETED;
 
 	double elapsedTime = get_elapsed_ms() - startTime;
 	printf("Chunk %d,%d,%d took %0.4f ms\n", chunk->x, chunk->y, chunk->z, elapsedTime);

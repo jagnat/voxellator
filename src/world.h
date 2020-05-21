@@ -29,6 +29,10 @@ typedef enum
 	VOXEL_STONE = 3,
 } VoxelType;
 
+#define STATUS_NOT_STARTED 0
+#define STATUS_IN_PROGRESS 1
+#define STATUS_COMPLETED 2
+
 typedef struct _Chunk Chunk;
 struct _Chunk
 {
@@ -36,8 +40,8 @@ struct _Chunk
 	int x, y, z;
 	int empty;
 	int set_voxel_count;
-	volatile int generated;
-	volatile int meshed;
+	volatile int generation_status;
+	volatile int meshing_status;
 	Chunk *next;
 	ChunkMesh *mesh;
 	Chunk* neighbors[6]; // +x, -x, +y, -y, +z, -z
